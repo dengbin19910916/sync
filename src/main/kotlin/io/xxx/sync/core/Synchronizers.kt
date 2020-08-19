@@ -129,7 +129,7 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
             var pages = if (count == null) 0 else count / pageSize + startPage
             while (pages-- > 0) {
                 val (getDataTime, data) = execute {
-                    getData(shopCode, schedule, parameter, pages)
+                    getData(shopCode, schedule, parameter, pages + startPage)
                 }
                 schedule.pullMillis += getDataTime
                 if (!data.isEmpty()) {
