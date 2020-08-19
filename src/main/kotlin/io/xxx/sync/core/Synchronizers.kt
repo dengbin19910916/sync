@@ -96,44 +96,34 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
     abstract fun getData(shopCode: String, schedule: SyncSchedule, parameter: Any?, pageNo: Long): Collection<SyncDocument>
 
     override fun pullAndSave(schedule: SyncSchedule, parameter: Any?) {
-        fun getCount0(shopCode: String, schedule: SyncSchedule, parameter: Any?): Long {
+        fun <T> execute(action: () -> T): Pair<Long, T> {
             val stopWatch = StopWatch()
             stopWatch.start()
-            var count = getCount(shopCode, schedule, parameter)
-            if (count == null) {
-                count = 0L
-            }
+            val result = action()
             stopWatch.stop()
-            schedule.pullMillis += stopWatch.totalTimeMillis
-            schedule.totalCount = count
-            return count
-        }
-
-        fun getData0(shopCode: String, schedule: SyncSchedule, parameter: Any?, pageNo: Long): Collection<SyncDocument> {
-            val stopWatch = StopWatch()
-            stopWatch.start()
-            val data = getData(shopCode, schedule, parameter, pageNo)
-            stopWatch.stop()
-            schedule.pullMillis += stopWatch.totalTimeMillis
-            return data
-        }
-
-        fun saveData0(shopCode: String, schedule: SyncSchedule, parameter: Any?, document: SyncDocument) {
-            val stopWatch = StopWatch()
-            stopWatch.start()
-            saveData(shopCode, schedule, parameter, document)
-            stopWatch.stop()
-            schedule.saveMillis += stopWatch.totalTimeMillis
+            return Pair(stopWatch.totalTimeMillis, result)
         }
 
         val shopCodes = property.shopCode.split(",")
         val targetShopCode = shopCodes[0]
         shopCodes.forEach { shopCode ->
-            var pages = getCount0(shopCode, schedule, parameter) / pageSize
+            val (getCountTime, count) = execute {
+                return@execute getCount(shopCode, schedule, parameter)
+            }
+            schedule.pullMillis += getCountTime
+            var pages = if (count == null) 0 else count / pageSize
             while (pages-- > 0) {
-                val data = getData0(shopCode, schedule, parameter, pages)
+                val (getDataTime, data) = execute {
+                    return@execute getData(shopCode, schedule, parameter, pages)
+                }
+                schedule.pullMillis += getDataTime
                 if (!data.isEmpty()) {
-                    data.parallelStream().forEach { saveData0(targetShopCode, schedule, parameter, it) }
+                    data.parallelStream().forEach {
+                        val (saveDataTime, _) = execute {
+                            return@execute saveData(targetShopCode, schedule, parameter, it)
+                        }
+                        schedule.saveMillis += saveDataTime
+                    }
                 }
             }
         }
