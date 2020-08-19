@@ -25,8 +25,7 @@ data class SyncProperty(var id: Long,
                         var beanName: String?,
                         var beanClass: String?,
                         var enabled: Boolean,
-                        var fired: Boolean) {
-}
+                        var fired: Boolean)
 
 @TableName("sync_schedule")
 data class SyncSchedule(var id: Long,
