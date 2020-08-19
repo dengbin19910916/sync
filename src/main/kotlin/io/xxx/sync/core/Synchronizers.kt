@@ -84,17 +84,24 @@ abstract class DocumentSynchronizer(property: SyncProperty) : AbstractSynchroniz
 }
 
 /**
- * 通过分页的方式同步数据。
+ * 通过分页的方式同步数据
  */
 abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchronizer(property) {
 
     /**
-     * 默认每页100条数据。
+     * 默认数据起始页码为1
+     */
+    open val startPage by lazy {
+        property.startPage
+    }
+
+    /**
+     * 默认每页100条数据
      */
     open val pageSize = 100
 
     /**
-     * 返回数据总数。
+     * 返回数据总数
      */
     abstract fun getCount(shopCode: String, schedule: SyncSchedule, parameter: Any?): Long?
 
@@ -119,7 +126,7 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
                 getCount(shopCode, schedule, parameter)
             }
             schedule.pullMillis += getCountTime
-            var pages = if (count == null) 0 else count / pageSize
+            var pages = if (count == null) 0 else count / pageSize + startPage
             while (pages-- > 0) {
                 val (getDataTime, data) = execute {
                     getData(shopCode, schedule, parameter, pages)
