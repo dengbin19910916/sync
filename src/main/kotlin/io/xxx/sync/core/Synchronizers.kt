@@ -37,6 +37,9 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
         }
     }
 
+    /**
+     * 扩展参数由子类提供并共享给父类方法
+     */
     open fun getParameters(): List<Any> = emptyList()
 
     private fun getUncompletedSchedules(): List<SyncSchedule> {

@@ -79,8 +79,6 @@ class JdDpsRefundSynchronizer(property: SyncProperty) : PageDocumentSynchronizer
                 }.toList()
     }
 
-    override fun getParameters(): List<Any> = listOf(1L, 11L)
-
     private fun getResponse(schedule: SyncSchedule, pageNo: Int): DropshipDpsSearchpreResponse {
         val request = DropshipDpsSearchpreRequest()
         request.pageSize = pageSize
