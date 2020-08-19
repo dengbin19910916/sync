@@ -17,6 +17,9 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
         pullAndSave()
     }
 
+    /**
+     * 拉取并保存数据
+     */
     private fun pullAndSave() {
         fun pullAndSave0(parameter: Any? = null) {
             getUncompletedSchedules().forEach { schedule ->
@@ -108,19 +111,19 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
         val targetShopCode = shopCodes[0]
         shopCodes.forEach { shopCode ->
             val (getCountTime, count) = execute {
-                return@execute getCount(shopCode, schedule, parameter)
+                getCount(shopCode, schedule, parameter)
             }
             schedule.pullMillis += getCountTime
             var pages = if (count == null) 0 else count / pageSize
             while (pages-- > 0) {
                 val (getDataTime, data) = execute {
-                    return@execute getData(shopCode, schedule, parameter, pages)
+                    getData(shopCode, schedule, parameter, pages)
                 }
                 schedule.pullMillis += getDataTime
                 if (!data.isEmpty()) {
                     data.parallelStream().forEach {
                         val (saveDataTime, _) = execute {
-                            return@execute saveData(targetShopCode, schedule, parameter, it)
+                            saveData(targetShopCode, schedule, parameter, it)
                         }
                         schedule.saveMillis += saveDataTime
                     }
