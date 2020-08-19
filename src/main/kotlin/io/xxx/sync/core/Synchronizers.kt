@@ -1,11 +1,11 @@
 package io.xxx.sync.core
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
-import com.baomidou.mybatisplus.core.toolkit.IdWorker
 import org.quartz.Job
 import org.quartz.JobExecutionContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.StopWatch
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /**
@@ -70,11 +70,28 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
 abstract class DocumentSynchronizer(property: SyncProperty) : AbstractSynchronizer(property) {
 
     open fun saveData(shopCode: String, schedule: SyncSchedule, parameter: Any?, document: SyncDocument) {
-        document.id = IdWorker.getId()
-        document.propertyId = property.id
-        document.shopCode = shopCode
-        document.shopName = property.shopName
-        documentMapper.insert(document)
+        val qw = QueryWrapper<SyncDocument>()
+                .eq("property_id", document.propertyId)
+                .eq("sn", document.sn)
+        val oldDocument = documentMapper.selectOne(qw)
+        val now = LocalDateTime.now()
+        if (oldDocument == null) {
+            if (document.syncCreated == null) {
+                document.syncCreated = now
+            }
+            if (document.syncModified == null) {
+                document.syncModified = now
+            }
+            documentMapper.insert(document)
+        } else {
+            if (document.syncModified == null) {
+                document.syncModified = now
+            }
+            if (document.modified.isAfter(oldDocument.modified)) {
+                document.id = oldDocument.id
+                documentMapper.updateById(document)
+            }
+        }
     }
 
     companion object {
@@ -119,6 +136,9 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
             return Pair(stopWatch.totalTimeMillis, result)
         }
 
+        val stopWatch = StopWatch()
+        stopWatch.start()
+
         val shopCodes = property.shopCode.split(",")
         val targetShopCode = shopCodes[0]
         shopCodes.forEach { shopCode ->
@@ -142,5 +162,8 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
                 }
             }
         }
+
+        stopWatch.stop()
+        schedule.totalMillis += stopWatch.totalTimeMillis
     }
 }
