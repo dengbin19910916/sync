@@ -46,6 +46,8 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
         val wrapper = QueryWrapper<SyncSchedule>()
         wrapper.eq("property_id", property.id)
                 .eq("completed", 0)
+                .orderByDesc("priority")
+                .orderByAsc("start_time")
                 .last("limit 120")
         return scheduleMapper.selectList(wrapper)
     }
