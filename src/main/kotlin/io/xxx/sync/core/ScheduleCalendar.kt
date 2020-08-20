@@ -22,7 +22,7 @@ class ScheduleCalendar : Job {
         val wrapper = QueryWrapper<SyncProperty>()
         wrapper.eq("enabled", 1)
         val properties: List<SyncProperty> = propertyMapper.selectList(wrapper)
-        properties.parallelStream().forEach { property -> this.saveUncompletedSchedules(property) }
+        properties.forEach { property -> this.saveUncompletedSchedules(property) }
     }
 
     private fun saveUncompletedSchedules(property: SyncProperty) {
@@ -38,7 +38,7 @@ class ScheduleCalendar : Job {
         val betweenSeconds = duration.seconds
         val count = (betweenSeconds / property.timeInterval)
         for (i in 0 until count) {
-            val newStartTime = startTime.plusSeconds((property.timeInterval * i))
+            val newStartTime = startTime.plusSeconds(property.timeInterval * i)
             val schedule = buildSchedule(property, newStartTime)
             scheduleMapper.insert(schedule)
         }

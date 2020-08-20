@@ -27,13 +27,7 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
     }
 
     override fun execute(context: JobExecutionContext) {
-        if (log.isDebugEnabled) {
-            log.debug("Synchronizer started.")
-        }
         pullAndSave()
-        if (log.isDebugEnabled) {
-            log.debug("Synchronizer completed.")
-        }
     }
 
     /**
@@ -42,8 +36,16 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
     private fun pullAndSave() {
         fun pullAndSave0(parameter: Any? = null) {
             getUncompletedSchedules().forEach { schedule ->
+                if (log.isDebugEnabled) {
+                    log.debug("Synchronizer[{}][{}, {}] started.", schedule.id,
+                            schedule.startTime.format(formatter), schedule.endTime.format(formatter))
+                }
                 pullAndSave(schedule, parameter)
                 updateSchedule(schedule)
+                if (log.isDebugEnabled) {
+                    log.debug("Synchronizer[{}][{}, {}] completed.", schedule.id,
+                            schedule.startTime.format(formatter), schedule.endTime.format(formatter))
+                }
             }
         }
 
@@ -161,7 +163,7 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
                 getCount(shopCode, schedule, parameter)
             }
             schedule.pullMillis += getCountTime
-            var pages = if (count == null) 0 else count / pageSize + startPage
+            var pages = if (count == null) 0 else (count / pageSize + if (count % pageSize == 0L) 0 else 1)
             while (pages-- > 0) {
                 val (getDataTime, data) = execute {
                     getData(shopCode, schedule, parameter, pages + startPage)

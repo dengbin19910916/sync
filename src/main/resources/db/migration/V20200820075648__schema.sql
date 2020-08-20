@@ -40,11 +40,11 @@ create table sync_property
 
 INSERT INTO sync_property (id, type, shop_code, shop_name, origin_time, start_page, delay, time_interval,
                            bean_name, bean_class, enabled, fired)
-VALUES (1, 1, '8505,8529,8997', '京东自营旗舰店', '2020-08-15 00:00:00', 1, 60, 60, 'jdDpsOrderSynchronizer8505',
+VALUES (1, 1, '8505,8529,8997', '京东自营旗舰店', '2020-08-20 10:00:00', 1, 60, 60, 'jdDpsOrderSynchronizer8505',
         'io.xxx.sync.core.JdDpsOrderSynchronizer', 1, 1);
 INSERT INTO sync_property (id, type, shop_code, shop_name, origin_time, start_page, delay, time_interval,
                            bean_name, bean_class, enabled, fired)
-VALUES (2, 2, '8505,8529,8997', '京东自营旗舰店', '2020-08-15 00:00:00', 1, 60, 60, 'jdDpsRefundSynchronizer8505',
+VALUES (2, 2, '8505,8529,8997', '京东自营旗舰店', '2020-08-20 10:00:00', 1, 60, 60, 'jdDpsRefundSynchronizer8505',
         'io.xxx.sync.core.JdDpsRefundSynchronizer', 1, 1);
 
 drop table if exists sync_schedule;
