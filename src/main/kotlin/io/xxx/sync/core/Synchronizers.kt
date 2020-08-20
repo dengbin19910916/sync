@@ -46,10 +46,6 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
             if (minStartTime != null && maxEndTime != null) {
                 val schedule = SyncSchedule(1L, property.id, minStartTime, maxEndTime,
                         0, false, 0, 0, 0, 0)
-                if (log.isTraceEnabled) {
-                    log.debug("Synchronizer[{}][{}, {}] started.", schedule.id,
-                            schedule.startTime.format(formatter), schedule.endTime.format(formatter))
-                }
                 pullAndSave(schedule, parameter)
                 if (log.isDebugEnabled) {
                     val spendTime = if (schedule.totalMillis >= 1000)
@@ -66,10 +62,6 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
 
         fun singlePullAndSave(parameter: Any? = null) {
             getUncompletedSchedules().forEach { schedule ->
-                if (log.isTraceEnabled) {
-                    log.debug("Synchronizer[{}][{}, {}] started.", schedule.id,
-                            schedule.startTime.format(formatter), schedule.endTime.format(formatter))
-                }
                 pullAndSave(schedule, parameter)
                 updateSchedule(schedule)
                 if (log.isDebugEnabled) {
