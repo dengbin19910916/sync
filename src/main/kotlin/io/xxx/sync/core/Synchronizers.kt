@@ -40,8 +40,8 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
     private fun pullAndSave() {
         fun composePullAndSave(parameter: Any? = null) {
             val uncompletedSchedules = getUncompletedSchedules()
-            val minStartTime = uncompletedSchedules.minBy { it.startTime }?.startTime!!
-            val maxEndTime = uncompletedSchedules.maxBy { it.endTime }?.endTime!!
+            val minStartTime = uncompletedSchedules.minBy { it.startTime }!!.startTime
+            val maxEndTime = uncompletedSchedules.maxBy { it.endTime }!!.endTime
 
             val schedule = SyncSchedule(1L, property.id, minStartTime, maxEndTime,
                     0, false, 0, 0, 0, 0)
