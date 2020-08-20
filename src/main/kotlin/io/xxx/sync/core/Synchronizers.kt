@@ -36,23 +36,20 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
     private fun pullAndSave() {
         fun pullAndSave0(parameter: Any? = null) {
             getUncompletedSchedules().forEach { schedule ->
-                val stopWatch = StopWatch()
-                stopWatch.start()
                 if (log.isDebugEnabled) {
                     log.debug("Synchronizer[{}][{}, {}] started.", schedule.id,
                             schedule.startTime.format(formatter), schedule.endTime.format(formatter))
                 }
                 pullAndSave(schedule, parameter)
                 updateSchedule(schedule)
-                stopWatch.stop()
                 if (log.isDebugEnabled) {
-                    val spendTime = if (stopWatch.totalTimeMillis >= 1000)
-                        (stopWatch.totalTimeMillis / 1000).toString() + "s"
+                    val spendTime = if (schedule.totalMillis >= 1000)
+                        (schedule.totalMillis / 1000).toString() + "s"
                     else
-                        stopWatch.totalTimeMillis.toString() + "ms"
+                        schedule.totalMillis.toString() + "ms"
                     log.debug("Synchronizer[{}][{}, {}][{}, {}] completed.", schedule.id,
                             schedule.startTime.format(formatter), schedule.endTime.format(formatter),
-                    schedule.count, spendTime)
+                            schedule.count, spendTime)
                 }
             }
         }
