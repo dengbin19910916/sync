@@ -33,17 +33,18 @@ create table sync_property
     bean_name     varchar(100)          null,
     bean_class    varchar(200)          null,
     enabled       tinyint(1) default 1  not null,
-    fired         tinyint(1) default 1  not null
+    fired         tinyint(1) default 1  not null,
+    compositional tinyint(1) default 0  not null
 );
 
 INSERT INTO sync_property (id, type, shop_code, shop_name, origin_time, start_page, delay, time_interval,
-                           bean_name, bean_class, enabled, fired)
+                           bean_name, bean_class, enabled, fired, compositional)
 VALUES (1, 1, '8505,8529,8997', '京东自营旗舰店', '2020-08-01 00:00:00', 1, 60, 60, 'jdDpsOrderSynchronizer8505',
-        'io.xxx.sync.core.JdDpsOrderSynchronizer', 1, 1);
+        'io.xxx.sync.core.JdDpsOrderSynchronizer', 1, 1, 0);
 INSERT INTO sync_property (id, type, shop_code, shop_name, origin_time, start_page, delay, time_interval,
-                           bean_name, bean_class, enabled, fired)
+                           bean_name, bean_class, enabled, fired, compositional)
 VALUES (2, 2, '8505,8529,8997', '京东自营旗舰店', '2020-08-01 00:00:00', 1, 60, 60, 'jdDpsRefundSynchronizer8505',
-        'io.xxx.sync.core.JdDpsRefundSynchronizer', 1, 1);
+        'io.xxx.sync.core.JdDpsRefundSynchronizer', 1, 1, 0);
 
 drop table if exists sync_schedule;
 

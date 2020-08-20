@@ -18,6 +18,9 @@ import java.time.format.DateTimeFormatter
 abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job {
 
     @Autowired
+    private lateinit var propertyMapper: SyncPropertyMapper
+
+    @Autowired
     private lateinit var scheduleMapper: SyncScheduleMapper
 
     @Autowired
@@ -35,7 +38,31 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
      * 拉取并保存数据
      */
     private fun pullAndSave() {
-        fun pullAndSave0(parameter: Any? = null) {
+        fun composePullAndSave(parameter: Any? = null) {
+            val uncompletedSchedules = getUncompletedSchedules()
+            val minStartTime = uncompletedSchedules.minBy { it.startTime }?.startTime!!
+            val maxEndTime = uncompletedSchedules.maxBy { it.endTime }?.endTime!!
+
+            val schedule = SyncSchedule(1L, property.id, minStartTime, maxEndTime,
+                    0, false, 0, 0, 0, 0)
+            if (log.isTraceEnabled) {
+                log.debug("Synchronizer[{}][{}, {}] started.", schedule.id,
+                        schedule.startTime.format(formatter), schedule.endTime.format(formatter))
+            }
+            pullAndSave(schedule, parameter)
+            if (log.isDebugEnabled) {
+                val spendTime = if (schedule.totalMillis >= 1000)
+                    (schedule.totalMillis / 1000).toString() + "s"
+                else
+                    schedule.totalMillis.toString() + "ms"
+                log.debug("Synchronizer[{}, {}][{}, {}] completed.",
+                        schedule.startTime.format(formatter), schedule.endTime.format(formatter),
+                        schedule.count, spendTime)
+            }
+            updateSchedules(uncompletedSchedules)
+        }
+
+        fun singlePullAndSave(parameter: Any? = null) {
             getUncompletedSchedules().forEach { schedule ->
                 if (log.isTraceEnabled) {
                     log.debug("Synchronizer[{}][{}, {}] started.", schedule.id,
@@ -55,6 +82,27 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
             }
         }
 
+        fun pullAndSave0(parameter: Any? = null) {
+            if (property.compositional) {
+                composePullAndSave(parameter)
+            } else {
+                singlePullAndSave(parameter)
+            }
+        }
+
+        if (!property.fired) {
+            return
+        }
+        val property = propertyMapper.selectById(property.id) // refresh property
+
+        if (property == null) {
+            if (log.isWarnEnabled) {
+                log.warn("Property {} is not found, job is stopped.", this.property.id)
+            }
+            return
+        } else {
+            this.property = property
+        }
         if (getParameters().isEmpty()) {
             pullAndSave0()
         } else {
@@ -84,6 +132,13 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
     private fun updateSchedule(schedule: SyncSchedule) {
         schedule.completed = true
         scheduleMapper.updateById(schedule)
+    }
+
+    private fun updateSchedules(schedules: List<SyncSchedule>) {
+        schedules.forEach {
+            it.completed = true
+            scheduleMapper.updateById(it)
+        }
     }
 
     companion object {
