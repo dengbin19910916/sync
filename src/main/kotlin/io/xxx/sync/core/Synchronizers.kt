@@ -38,6 +38,14 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
      * 拉取并保存数据
      */
     private fun pullAndSave() {
+        fun debug(id: Any, schedule: SyncSchedule) {
+            if (log.isDebugEnabled) {
+                log.debug("Synchronizer[{}][{}, {}][{}, {}] completed.", id,
+                        schedule.startTime.format(formatter), schedule.endTime.format(formatter),
+                        schedule.count, schedule.spendTime)
+            }
+        }
+
         fun composePullAndSave(parameter: Any? = null) {
             val uncompletedSchedules = getUncompletedSchedules()
             val minStartTime = uncompletedSchedules.minByOrNull { it.startTime }?.startTime
@@ -47,15 +55,7 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
                 val schedule = SyncSchedule(1L, property.id, minStartTime, maxEndTime,
                         0, false, 0, 0, 0, 0)
                 pullAndSave(schedule, parameter)
-                if (log.isDebugEnabled) {
-                    val spendTime = if (schedule.totalMillis >= 1000)
-                        (schedule.totalMillis / 1000).toString() + "s"
-                    else
-                        schedule.totalMillis.toString() + "ms"
-                    log.debug("Synchronizer[{}, {}][{}, {}] completed.",
-                            schedule.startTime.format(formatter), schedule.endTime.format(formatter),
-                            schedule.count, spendTime)
-                }
+                debug("000000000000000", schedule)
                 updateSchedules(uncompletedSchedules)
             }
         }
@@ -64,15 +64,7 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
             getUncompletedSchedules().forEach { schedule ->
                 pullAndSave(schedule, parameter)
                 updateSchedule(schedule)
-                if (log.isDebugEnabled) {
-                    val spendTime = if (schedule.totalMillis >= 1000)
-                        (schedule.totalMillis / 1000).toString() + "s"
-                    else
-                        schedule.totalMillis.toString() + "ms"
-                    log.debug("Synchronizer[{}][{}, {}][{}, {}] completed.", schedule.id,
-                            schedule.startTime.format(formatter), schedule.endTime.format(formatter),
-                            schedule.count, spendTime)
-                }
+                debug(schedule.id, schedule)
             }
         }
 

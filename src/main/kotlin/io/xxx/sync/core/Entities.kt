@@ -1,5 +1,6 @@
 package io.xxx.sync.core
 
+import com.baomidou.mybatisplus.annotation.TableField
 import com.baomidou.mybatisplus.annotation.TableId
 import com.baomidou.mybatisplus.annotation.TableName
 import com.baomidou.mybatisplus.core.toolkit.IdWorker
@@ -39,6 +40,9 @@ data class SyncSchedule(var id: Long,
                         var pullMillis: Long = 0,
                         var saveMillis: Long = 0,
                         var totalMillis: Long = 0) {
+
+    @TableField(exist = false)
+    val spendTime: String = if (totalMillis > 1000) (totalMillis / 1000).toString() + "s" else totalMillis.toString() + "ms"
 }
 
 /**
