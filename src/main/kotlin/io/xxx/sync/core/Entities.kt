@@ -10,6 +10,7 @@ import java.time.LocalDateTime
 data class JobProperty(@TableId var name: String,
                        var description: String,
                        var enabled: Boolean,
+                       var address: String,
                        var beanName: String,
                        var cron: String,
                        var sign: String?)

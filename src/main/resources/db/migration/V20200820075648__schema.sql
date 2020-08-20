@@ -5,17 +5,18 @@ create table job_property
     name        varchar(100) primary key,
     description varchar(100),
     enabled     boolean      not null,
+    address     varchar(32)  not null,
     bean_name   varchar(200) not null,
     cron        varchar(20)  not null,
     sign        varchar(50)
 );
 
-insert into job_property(name, description, enabled, bean_name, cron)
-values ('scheduleCalendar', '生成Schedule', 1, 'scheduleCalendar', '*/1 * * * * ?');
-insert into job_property(name, description, enabled, bean_name, cron)
-values ('jdDpsOrderSynchronizer8505', '京东自营订单单同步', 1, 'jdDpsOrderSynchronizer8505', '*/1 * * * * ?');
-insert into job_property(name, description, enabled, bean_name, cron)
-values ('jdDpsRefundSynchronizer8505', '京东自营退单同步', 1, 'jdDpsRefundSynchronizer8505', '*/1 * * * * ?');
+insert into job_property(name, description, enabled, address, bean_name, cron)
+values ('scheduleCalendar', '生成Schedule', 1, '127.0.0.1', 'scheduleCalendar', '*/1 * * * * ?');
+insert into job_property(name, description, enabled, address, bean_name, cron)
+values ('jdDpsOrderSynchronizer8505', '京东自营订单单同步', 1, '127.0.0.1', 'jdDpsOrderSynchronizer8505', '*/1 * * * * ?');
+insert into job_property(name, description, enabled, address, bean_name, cron)
+values ('jdDpsRefundSynchronizer8505', '京东自营退单同步', 1, '127.0.0.1', 'jdDpsRefundSynchronizer8505', '*/1 * * * * ?');
 
 drop table if exists sync_property;
 

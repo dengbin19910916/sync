@@ -18,6 +18,7 @@ import org.springframework.context.support.GenericApplicationContext
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.util.ObjectUtils
+import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -143,13 +144,16 @@ class JobManager {
     }
 
     private fun scheduleJob(jobProperty: JobProperty) {
-        val jobDetail = getJobDetail(jobProperty)
-        if (jobProperty.enabled) {
-            if (!scheduler.checkExists(jobDetail.key)) {
-                scheduler.scheduleJob(jobDetail, getTrigger(jobProperty))
+        val address = InetAddress.getLocalHost().hostAddress
+        if (address == jobProperty.address) {
+            val jobDetail = getJobDetail(jobProperty)
+            if (jobProperty.enabled) {
+                if (!scheduler.checkExists(jobDetail.key)) {
+                    scheduler.scheduleJob(jobDetail, getTrigger(jobProperty))
+                }
+            } else {
+                scheduler.deleteJob(jobDetail.key)
             }
-        } else {
-            scheduler.deleteJob(jobDetail.key)
         }
     }
 
