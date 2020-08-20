@@ -92,10 +92,11 @@ abstract class DocumentSynchronizer(property: SyncProperty) : AbstractSynchroniz
     private lateinit var documentMapper: SyncDocumentMapper
 
     open fun saveData(shopCode: String, schedule: SyncSchedule, parameter: Any?, document: SyncDocument) {
-        val qw = QueryWrapper<SyncDocument>()
+        document.shopCode = shopCode
+        val wrapper = QueryWrapper<SyncDocument>()
                 .eq("property_id", document.propertyId)
                 .eq("sn", document.sn)
-        val oldDocument = documentMapper.selectOne(qw)
+        val oldDocument = documentMapper.selectOne(wrapper)
         val now = LocalDateTime.now()
         if (oldDocument == null) {
             if (document.syncCreated == null) {
