@@ -1,5 +1,3 @@
-begin ;
-
 drop table if exists job_property;
 
 create table job_property
@@ -79,5 +77,3 @@ create table sync_document
     sync_created  datetime    not null,
     sync_modified datetime    not null
 );
-
-commit ;
