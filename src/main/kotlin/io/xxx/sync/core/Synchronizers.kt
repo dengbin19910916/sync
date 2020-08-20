@@ -40,26 +40,28 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
     private fun pullAndSave() {
         fun composePullAndSave(parameter: Any? = null) {
             val uncompletedSchedules = getUncompletedSchedules()
-            val minStartTime = uncompletedSchedules.minBy { it.startTime }?.startTime!!
-            val maxEndTime = uncompletedSchedules.maxBy { it.endTime }?.endTime!!
+            val minStartTime = uncompletedSchedules.minBy { it.startTime }?.startTime
+            val maxEndTime = uncompletedSchedules.maxBy { it.endTime }?.endTime
 
-            val schedule = SyncSchedule(1L, property.id, minStartTime, maxEndTime,
-                    0, false, 0, 0, 0, 0)
-            if (log.isTraceEnabled) {
-                log.debug("Synchronizer[{}][{}, {}] started.", schedule.id,
-                        schedule.startTime.format(formatter), schedule.endTime.format(formatter))
+            if (minStartTime != null && maxEndTime != null) {
+                val schedule = SyncSchedule(1L, property.id, minStartTime, maxEndTime,
+                        0, false, 0, 0, 0, 0)
+                if (log.isTraceEnabled) {
+                    log.debug("Synchronizer[{}][{}, {}] started.", schedule.id,
+                            schedule.startTime.format(formatter), schedule.endTime.format(formatter))
+                }
+                pullAndSave(schedule, parameter)
+                if (log.isDebugEnabled) {
+                    val spendTime = if (schedule.totalMillis >= 1000)
+                        (schedule.totalMillis / 1000).toString() + "s"
+                    else
+                        schedule.totalMillis.toString() + "ms"
+                    log.debug("Synchronizer[{}, {}][{}, {}] completed.",
+                            schedule.startTime.format(formatter), schedule.endTime.format(formatter),
+                            schedule.count, spendTime)
+                }
+                updateSchedules(uncompletedSchedules)
             }
-            pullAndSave(schedule, parameter)
-            if (log.isDebugEnabled) {
-                val spendTime = if (schedule.totalMillis >= 1000)
-                    (schedule.totalMillis / 1000).toString() + "s"
-                else
-                    schedule.totalMillis.toString() + "ms"
-                log.debug("Synchronizer[{}, {}][{}, {}] completed.",
-                        schedule.startTime.format(formatter), schedule.endTime.format(formatter),
-                        schedule.count, spendTime)
-            }
-            updateSchedules(uncompletedSchedules)
         }
 
         fun singlePullAndSave(parameter: Any? = null) {
