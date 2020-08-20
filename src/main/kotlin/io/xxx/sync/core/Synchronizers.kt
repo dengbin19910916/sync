@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter
 /**
  * 同步数据并更新[SyncSchedule]
  */
+@Suppress("SpringJavaAutowiredMembersInspection")
 abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job {
 
     @Autowired
@@ -91,6 +92,7 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
     }
 }
 
+@Suppress("SpringJavaAutowiredMembersInspection")
 abstract class DocumentSynchronizer(property: SyncProperty) : AbstractSynchronizer(property) {
 
     @Autowired
