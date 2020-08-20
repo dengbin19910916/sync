@@ -36,15 +36,22 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
     private fun pullAndSave() {
         fun pullAndSave0(parameter: Any? = null) {
             getUncompletedSchedules().forEach { schedule ->
+                val stopWatch = StopWatch()
                 if (log.isDebugEnabled) {
                     log.debug("Synchronizer[{}][{}, {}] started.", schedule.id,
                             schedule.startTime.format(formatter), schedule.endTime.format(formatter))
                 }
                 pullAndSave(schedule, parameter)
                 updateSchedule(schedule)
+                stopWatch.stop()
                 if (log.isDebugEnabled) {
-                    log.debug("Synchronizer[{}][{}, {}] completed.", schedule.id,
-                            schedule.startTime.format(formatter), schedule.endTime.format(formatter))
+                    val spendTime = if (stopWatch.totalTimeMillis >= 1000)
+                        (stopWatch.totalTimeMillis / 1000).toString() + "s"
+                    else
+                        stopWatch.totalTimeMillis.toString() + "ms"
+                    log.debug("Synchronizer[{}][{}, {}][{}, {}] completed.", schedule.id,
+                            schedule.startTime.format(formatter), schedule.endTime.format(formatter),
+                    schedule.count, spendTime)
                 }
             }
         }
@@ -175,7 +182,7 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
                             }
                 }
                 schedule.pullMillis += getDataTime
-                schedule.totalCount += data.size
+                schedule.count += data.size
                 if (!data.isEmpty()) {
                     data.parallelStream().forEach {
                         val (saveDataTime, _) = execute {

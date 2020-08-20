@@ -55,7 +55,7 @@ create table sync_schedule
     end_time     datetime              not null,
     priority     int     default 1     not null,
     completed    boolean default false not null,
-    total_count  bigint,
+    count        bigint,
     pull_millis  bigint,
     save_millis  bigint,
     total_millis bigint

@@ -34,7 +34,7 @@ data class SyncSchedule(var id: Long,
                         var endTime: LocalDateTime,
                         var priority: Int = 0,
                         var completed: Boolean = false,
-                        var totalCount: Long = 0,
+                        var count: Long = 0,
                         var pullMillis: Long = 0,
                         var saveMillis: Long = 0,
                         var totalMillis: Long = 0) {
