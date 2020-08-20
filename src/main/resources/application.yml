@@ -14,3 +14,6 @@ spring:
     url: jdbc:mysql://localhost:3306/test
     username: root
     password: 12345678
+logging:
+  level:
+    io.xxx.sync.core.AbstractSynchronizer: debug

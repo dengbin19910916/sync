@@ -29,6 +29,7 @@ data class SyncProperty(var id: Long,
 
 @TableName("sync_schedule")
 data class SyncSchedule(var id: Long,
+                        var propertyId: Long,
                         var startTime: LocalDateTime,
                         var endTime: LocalDateTime,
                         var priority: Int = 0,
@@ -36,7 +37,8 @@ data class SyncSchedule(var id: Long,
                         var totalCount: Long = 0,
                         var pullMillis: Long = 0,
                         var saveMillis: Long = 0,
-                        var totalMillis: Long = 0)
+                        var totalMillis: Long = 0) {
+}
 
 /**
  * 数据包装类型

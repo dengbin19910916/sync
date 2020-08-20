@@ -32,6 +32,7 @@ repositories {
 extra["springBootAdminVersion"] = "2.3.0"
 
 dependencies {
+    implementation("org.codehaus.jackson:jackson-mapper-asl:1.9.13")
     implementation("com.jd:open-api-sdk:2.0")
     implementation("com.google.guava:guava:29.0-jre")
     implementation("com.alibaba:fastjson:1.2.73")

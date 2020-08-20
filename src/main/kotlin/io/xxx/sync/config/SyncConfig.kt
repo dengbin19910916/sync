@@ -25,19 +25,22 @@ import java.util.stream.Collectors
 
 @Slf4j
 @Configuration
-class SyncConfig : ApplicationRunner {
+class SyncConfig : ApplicationRunner, ApplicationContextAware {
 
     @Autowired
     private lateinit var propertyMapper: SyncPropertyMapper
 
+    @Autowired
+    private lateinit var applicationContext: GenericApplicationContext
+
     @Synchronized
     override fun run(args: ApplicationArguments) {
         val wrapper = QueryWrapper<SyncProperty>()
-        wrapper.eq("enabled", true)
+        wrapper.eq("enabled", 1)
         val properties = propertyMapper.selectList(wrapper)
         for (property in properties) {
             val clazz = property.getBeanClass()
-            val beanName = property.getBeanName(clazz)
+            val beanName = property.getBeanName()
             val builder = BeanDefinitionBuilder.genericBeanDefinition(clazz)
                     .addConstructorArgValue(property)
             if (!applicationContext.isBeanNameInUse(beanName)) {
@@ -50,25 +53,24 @@ class SyncConfig : ApplicationRunner {
         }
     }
 
-    companion object : ApplicationContextAware {
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
+        this.applicationContext = applicationContext as GenericApplicationContext
+    }
+
+    companion object {
 
         val log: Logger = LoggerFactory.getLogger(SyncConfig::class.java)
-        private lateinit var applicationContext: GenericApplicationContext
-
-        override fun setApplicationContext(applicationContext: ApplicationContext) {
-            this.applicationContext = applicationContext as GenericApplicationContext
-        }
     }
 }
 
 fun SyncProperty.getBeanClass(): Class<*> {
-    return Class.forName(this.beanClass)
+    return Class.forName(beanClass)
 }
 
-fun SyncProperty.getBeanName(clazz: Class<*>): String {
-    return if (this.beanName == null)
-        clazz.simpleName.decapitalize() + this.shopCode
-    else this.beanName!!
+fun SyncProperty.getBeanName(): String {
+    return if (beanName == null)
+        Class.forName(beanClass).simpleName.decapitalize() + shopCode
+    else beanName!!
 }
 
 @PersistJobDataAfterExecution
@@ -76,11 +78,9 @@ fun SyncProperty.getBeanName(clazz: Class<*>): String {
 class ProxyJob : Job {
 
     override fun execute(context: JobExecutionContext) {
-        val property = context.mergedJobDataMap["property"] as SyncProperty
+        val jobProperty = context.mergedJobDataMap["jobProperty"] as JobProperty
         val applicationContext = context.mergedJobDataMap["applicationContext"] as ApplicationContext
-        val clazz = property.getBeanClass()
-        val beanName = property.getBeanName(clazz)
-        val synchronizer = applicationContext.getBean(beanName, Job::class.java)
+        val synchronizer = applicationContext.getBean(jobProperty.beanName, Job::class.java)
         synchronizer.execute(context)
     }
 }
@@ -88,23 +88,17 @@ class ProxyJob : Job {
 @Component
 class JobManager {
 
-    companion object {
-        private val log: Logger = LoggerFactory.getLogger(JobManager::class.java)
-        private val JOB_PROPERTY_MAP = mutableMapOf<String, JobProperty>()
-        private val scheduler: Scheduler = StdSchedulerFactory().scheduler
+    @Autowired
+    private lateinit var jobPropertyMapper: JobPropertyMapper
 
-        @Autowired
-        private lateinit var jobPropertyMapper: JobPropertyMapper
-
-        @Autowired
-        private lateinit var applicationContext: ApplicationContext
-    }
+    @Autowired
+    private lateinit var applicationContext: ApplicationContext
 
     init {
         scheduler.start()
     }
 
-    @Scheduled(cron = "*/5 * * * * ?")
+    @Scheduled(cron = "*/3 * * * * ?")
     fun loadJobs() {
         val jobProperties = jobPropertyMapper.selectList(null)
         if (jobProperties.isEmpty()) {
@@ -120,8 +114,8 @@ class JobManager {
                 if (!JOB_PROPERTY_MAP.containsKey(jobProperty.name)) {
                     if (ObjectUtils.isEmpty(jobProperty.sign) || !jobProperty.sign.equals(sign)) {
                         updateJobProperty(jobProperty, sign)
-                        scheduleJob(jobProperty)
                     }
+                    scheduleJob(jobProperty)
                 } else {
                     if (jobProperty.sign != JOB_PROPERTY_MAP[jobProperty.name]?.sign) {
                         updateJobProperty(jobProperty, sign)
@@ -207,5 +201,11 @@ class JobManager {
                 .withDescription(jobProperty.description)
                 .withSchedule(CronScheduleBuilder.cronSchedule(jobProperty.cron))
                 .build()
+    }
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(JobManager::class.java)
+        private val JOB_PROPERTY_MAP = mutableMapOf<String, JobProperty>()
+        private val scheduler: Scheduler = StdSchedulerFactory().scheduler
     }
 }

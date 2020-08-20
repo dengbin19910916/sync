@@ -3,8 +3,11 @@ package io.xxx.sync.core
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import org.quartz.Job
 import org.quartz.JobExecutionContext
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.util.StopWatch
+import org.springframework.web.client.RestTemplate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -13,8 +16,24 @@ import java.time.format.DateTimeFormatter
  */
 abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job {
 
+    @Autowired
+    private lateinit var scheduleMapper: SyncScheduleMapper
+
+    @Autowired
+    private lateinit var restTemplateBuilder: RestTemplateBuilder
+
+    protected val restTemplate: RestTemplate by lazy {
+        restTemplateBuilder.build()
+    }
+
     override fun execute(context: JobExecutionContext) {
+        if (log.isDebugEnabled) {
+            log.debug("Synchronizer started.")
+        }
         pullAndSave()
+        if (log.isDebugEnabled) {
+            log.debug("Synchronizer completed.")
+        }
     }
 
     /**
@@ -60,14 +79,15 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
     }
 
     companion object {
-        @Autowired
-        private lateinit var scheduleMapper: SyncScheduleMapper
-
+        private var log = LoggerFactory.getLogger(AbstractSynchronizer::class.java)
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")!!
     }
 }
 
 abstract class DocumentSynchronizer(property: SyncProperty) : AbstractSynchronizer(property) {
+
+    @Autowired
+    private lateinit var documentMapper: SyncDocumentMapper
 
     open fun saveData(shopCode: String, schedule: SyncSchedule, parameter: Any?, document: SyncDocument) {
         val qw = QueryWrapper<SyncDocument>()
@@ -92,11 +112,6 @@ abstract class DocumentSynchronizer(property: SyncProperty) : AbstractSynchroniz
                 documentMapper.updateById(document)
             }
         }
-    }
-
-    companion object {
-        @Autowired
-        private lateinit var documentMapper: SyncDocumentMapper
     }
 }
 
@@ -150,6 +165,11 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
             while (pages-- > 0) {
                 val (getDataTime, data) = execute {
                     getData(shopCode, schedule, parameter, pages + startPage)
+                            .onEach {
+                                it.propertyId = property.id
+                                it.shopCode = property.shopCode
+                                it.shopName = property.shopName
+                            }
                 }
                 schedule.pullMillis += getDataTime
                 if (!data.isEmpty()) {

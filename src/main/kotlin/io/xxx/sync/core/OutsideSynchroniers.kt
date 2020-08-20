@@ -6,10 +6,12 @@ import com.jd.open.api.sdk.request.supplier.DropshipDpsSearchRequest
 import com.jd.open.api.sdk.request.supplier.DropshipDpsSearchpreRequest
 import com.jd.open.api.sdk.response.supplier.DropshipDpsSearchResponse
 import com.jd.open.api.sdk.response.supplier.DropshipDpsSearchpreResponse
-import com.jd.security.tdeclient.SecretJdClient
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpMethod
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
+import kotlin.reflect.jvm.jvmName
 
 /**
  * 京东自营订单
@@ -18,12 +20,12 @@ import java.util.*
 class JdDpsOrderSynchronizer(property: SyncProperty) : PageDocumentSynchronizer(property) {
 
     override fun getCount(shopCode: String, schedule: SyncSchedule, parameter: Any?): Long? {
-        val response = getResponse(schedule, 1)
-        return response.searchResult.recordCount as Long?
+        val response = getResponse(shopCode, schedule, 1)
+        return response.searchResult?.recordCount?.toLong()
     }
 
     override fun getData(shopCode: String, schedule: SyncSchedule, parameter: Any?, pageNo: Long): Collection<SyncDocument> {
-        val response = getResponse(schedule, pageNo.toInt())
+        val response = getResponse(shopCode, schedule, pageNo.toInt())
         return response.searchResult.resultDtoList
                 .map {
                     SyncDocument(it.customOrderId.toString(), JSON.toJSONString(it),
@@ -32,21 +34,21 @@ class JdDpsOrderSynchronizer(property: SyncProperty) : PageDocumentSynchronizer(
 
     }
 
-    private fun getResponse(schedule: SyncSchedule, pageNumber: Int): DropshipDpsSearchResponse {
+    private fun getResponse(shopCode: String, schedule: SyncSchedule, pageNumber: Int): DropshipDpsSearchResponse {
         val request = DropshipDpsSearchRequest()
         request.pageSize = pageSize
         request.page = pageNumber
         request.beginDate = schedule.startTime.toDate()
         request.endDate = schedule.endTime.toDate()
-        return jdClient.execute(request)
+        val url = "http://114.67.201.245:3389/api/execute?shopCode=${shopCode}&requestClass=${request::class.jvmName}"
+        val httpEntity = HttpEntity<Any>(request, null)
+        return restTemplate.exchange(url, HttpMethod.POST, httpEntity, request.responseClass)
+                .body!!
     }
 
     companion object {
-        private val jdClient = DefaultJdClient("", "", "", "")
-        private val tdeClient = SecretJdClient.getInstance("", "", "", "")!!
-
         fun LocalDateTime.toDate(): Date {
-            return Date.from(this.atZone(ZoneId.systemDefault()).toInstant())!!
+            return Date.from(this.atZone(ZoneId.systemDefault()).toInstant())
         }
 
         fun Date.toLocalDateTime(): LocalDateTime {
@@ -65,7 +67,7 @@ class JdDpsRefundSynchronizer(property: SyncProperty) : PageDocumentSynchronizer
 
     override fun getCount(shopCode: String, schedule: SyncSchedule, parameter: Any?): Long? {
         val response = getResponse(schedule, 1)
-        return response.searchPreResult.recordCount as Long?
+        return response.searchPreResult?.recordCount?.toLong()
     }
 
     override fun getData(shopCode: String, schedule: SyncSchedule, parameter: Any?, pageNo: Long): Collection<SyncDocument> {
@@ -74,7 +76,7 @@ class JdDpsRefundSynchronizer(property: SyncProperty) : PageDocumentSynchronizer
                 .map {
                     val modifiedDate: LocalDateTime = if (it.modifiedDate == null) it.roApplyDate.toLocalDateTime()
                     else it.modifiedDate.toLocalDateTime()
-                    SyncDocument(it.customOrderId.toString(), "", JSON.toJSONString(it),
+                    SyncDocument(it.roPreNo.toString(), it.customOrderId.toString(), JSON.toJSONString(it),
                             it.roApplyDate.toLocalDateTime(), modifiedDate)
                 }.toList()
     }
@@ -89,8 +91,9 @@ class JdDpsRefundSynchronizer(property: SyncProperty) : PageDocumentSynchronizer
     }
 
     companion object {
-        val jdClient = DefaultJdClient("", "", "", "")
-        val tdeClient = SecretJdClient.getInstance("", "", "", "")!!
+        private val jdClient = DefaultJdClient(
+                "http://api.jd.com/routerjson", "e1085458fffe44e988231584556bcbe4ztew",
+                "C435BE5E5410BBE2B8CC5D57B96F2A87", "87fdccacafd2407eb84d2f52d81e6959")
 
         fun LocalDateTime.toDate(): Date {
             return Date.from(this.atZone(ZoneId.systemDefault()).toInstant())!!

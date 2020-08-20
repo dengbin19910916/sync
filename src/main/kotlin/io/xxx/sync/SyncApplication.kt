@@ -9,6 +9,5 @@ import org.springframework.scheduling.annotation.EnableScheduling
 class SyncApplication
 
 fun main(args: Array<String>) {
-    val applicationContext = runApplication<SyncApplication>(*args)
-    applicationContext.getBean("jdDpsRefundSynchronizer8501")
+    runApplication<SyncApplication>(*args)
 }
