@@ -175,6 +175,7 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
                             }
                 }
                 schedule.pullMillis += getDataTime
+                schedule.totalCount += data.size
                 if (!data.isEmpty()) {
                     data.parallelStream().forEach {
                         val (saveDataTime, _) = execute {
