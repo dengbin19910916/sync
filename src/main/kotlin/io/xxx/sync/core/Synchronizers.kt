@@ -37,7 +37,7 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
     private fun pullAndSave() {
         fun pullAndSave0(parameter: Any? = null) {
             getUncompletedSchedules().forEach { schedule ->
-                if (log.isDebugEnabled) {
+                if (log.isTraceEnabled) {
                     log.debug("Synchronizer[{}][{}, {}] started.", schedule.id,
                             schedule.startTime.format(formatter), schedule.endTime.format(formatter))
                 }
