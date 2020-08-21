@@ -64,7 +64,7 @@ class JdDpsRefundSynchronizer(property: SyncProperty) : PageDocumentSynchronizer
     override fun getData(shopCode: String, schedule: SyncSchedule, parameter: Any?, pageNo: Long): Collection<SyncDocument> {
         val response = getResponse(schedule, pageNo.toInt())
         return response.searchPreResult.resultDtoList?.map {
-            val modifiedDate: LocalDateTime = if (it.modifiedDate == null) it.roApplyDate.toLocalDateTime()
+            val modifiedDate = if (it.modifiedDate == null) it.roApplyDate.toLocalDateTime()
             else it.modifiedDate.toLocalDateTime()
             SyncDocument(it.roPreNo.toString(), it.customOrderId.toString(), JSON.toJSONString(it),
                     it.roApplyDate.toLocalDateTime(), modifiedDate)
