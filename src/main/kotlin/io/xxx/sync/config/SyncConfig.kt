@@ -92,24 +92,18 @@ class JobManager {
 
         for (jobProperty in jobProperties) {
             val sign = jobProperty.sign()
-            if (ObjectUtils.isEmpty(jobProperty.sign)) {
-                updateJobProperty(jobProperty, sign)
+            if (!JOB_PROPERTY_MAP.containsKey(jobProperty.name)) {
+                if (ObjectUtils.isEmpty(jobProperty.sign) || jobProperty.sign != sign) {
+                    updateJobProperty(jobProperty, sign)
+                }
                 scheduleJob(jobProperty)
             } else {
-                if (!JOB_PROPERTY_MAP.containsKey(jobProperty.name)) {
-                    if (ObjectUtils.isEmpty(jobProperty.sign) || !jobProperty.sign.equals(sign)) {
-                        updateJobProperty(jobProperty, sign)
-                    }
+                if (jobProperty.sign == null || jobProperty.sign != sign) {
+                    updateJobProperty(jobProperty, sign)
+                    scheduler.deleteJob(JobKey(jobProperty.beanName + "Job"))
                     scheduleJob(jobProperty)
-                } else {
-                    if (jobProperty.sign != JOB_PROPERTY_MAP[jobProperty.name]?.sign) {
-                        updateJobProperty(jobProperty, sign)
-                        scheduler.deleteJob(JobKey(jobProperty.beanName + "Job"))
-                        scheduleJob(jobProperty)
-                    }
                 }
             }
-            JOB_PROPERTY_MAP[jobProperty.name] = jobProperty
         }
 
         val jobNames = jobProperties.stream()
