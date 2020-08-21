@@ -100,7 +100,10 @@ class JobManager {
             } else {
                 if (jobProperty.sign == null || jobProperty.sign != sign) {
                     updateJobProperty(jobProperty, sign)
-                    scheduler.deleteJob(JobKey(jobProperty.beanName + "Job"))
+                    val jobKey = JobKey(jobProperty.beanName + "Job")
+                    if (scheduler.checkExists(jobKey)) {
+                        scheduler.deleteJob(jobKey)
+                    }
                     scheduleJob(jobProperty)
                 }
             }
@@ -130,7 +133,9 @@ class JobManager {
                     scheduler.scheduleJob(jobDetail, getTrigger(jobProperty))
                 }
             } else {
-                scheduler.deleteJob(jobDetail.key)
+                if (scheduler.checkExists(jobDetail.key)) {
+                    scheduler.deleteJob(jobDetail.key)
+                }
             }
         }
     }
