@@ -66,7 +66,7 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
                 val schedule = SyncSchedule(1L, property.id, minStartTime, maxEndTime,
                         0, false, 0, 0, 0, 0)
                 pullAndSave(schedule, parameter)
-                debug("000000000000000", schedule)
+                debug("0000000000000000000", schedule)
                 updateSchedules(uncompletedSchedules)
             }
         }
