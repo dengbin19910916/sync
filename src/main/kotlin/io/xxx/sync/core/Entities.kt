@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField
 import com.baomidou.mybatisplus.annotation.TableId
 import com.baomidou.mybatisplus.annotation.TableName
 import com.baomidou.mybatisplus.core.toolkit.IdWorker
+import java.lang.RuntimeException
 import java.time.LocalDateTime
 
 @TableName("job_property")
@@ -24,11 +25,36 @@ data class SyncProperty(var id: Long,
                         var startPage: Int = 1,
                         var delay: Int = 60,
                         var timeInterval: Int = 60,
+                        var host: String?,
+                        var countPath: String?,
+                        var dataPath: String?,
+                        var countJsonPath: String?,
+                        var dataJsonPath: String?,
+                        var snJsonPath: String?,
+                        var rsnJsonPath: String?,
+                        var createdJsonPath: String?,
+                        var modifiedJsonPath: String?,
                         var beanName: String?,
                         var beanClass: String?,
                         var enabled: Boolean,
                         var fired: Boolean,
-                        var compositional: Boolean)
+                        var compositional: Boolean) {
+    val countUrl: String
+        get() {
+            if (host == null) {
+                throw RuntimeException("Host is empty.")
+            }
+            return host + countPath
+        }
+
+    val dataUrl: String
+        get() {
+            if (host == null) {
+                throw RuntimeException("Host is empty.")
+            }
+            return host + countPath
+        }
+}
 
 @TableName("sync_schedule")
 data class SyncSchedule(var id: Long,

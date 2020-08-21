@@ -1,13 +1,23 @@
 package io.xxx.sync.core
 
+import com.alibaba.fastjson.JSON
+import com.alibaba.fastjson.JSONArray
+import com.alibaba.fastjson.JSONObject
+import com.alibaba.fastjson.JSONPath
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import org.quartz.Job
 import org.quartz.JobExecutionContext
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
+import org.springframework.http.RequestEntity
+import org.springframework.util.ObjectUtils
 import org.springframework.util.StopWatch
 import org.springframework.web.client.RestTemplate
+import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -186,12 +196,46 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
     /**
      * 返回数据总数
      */
-    abstract fun getCount(shopCode: String, schedule: SyncSchedule, parameter: Any?): Long?
+    open fun getCount(shopCode: String, schedule: SyncSchedule, parameter: Any?): Long? {
+        val headers = HttpHeaders()
+        headers["Content-Type"] = listOf(MediaType.APPLICATION_JSON_VALUE)
+        val requestEntity = RequestEntity<Any>(headers, HttpMethod.GET, URI.create(property.countUrl))
+        return if (ObjectUtils.isEmpty(property.countJsonPath)) {
+            restTemplate.exchange(requestEntity, Long::class.java).body
+        } else {
+            val response = restTemplate.exchange(requestEntity, JSONObject::class.java).body
+            JSONPath.eval(response, property.countJsonPath).toString().toLong()
+        }
+    }
 
     /**
      * 返回数据对象，需要将原始数据包装成[SyncDocument]
      */
-    abstract fun getData(shopCode: String, schedule: SyncSchedule, parameter: Any?, pageNo: Long): Collection<SyncDocument>
+    open fun getData(shopCode: String, schedule: SyncSchedule, parameter: Any?, pageNo: Long): Collection<SyncDocument> {
+        val headers = HttpHeaders()
+        headers["Content-Type"] = listOf(MediaType.APPLICATION_JSON_VALUE)
+        val requestEntity = RequestEntity<Any>(headers, HttpMethod.GET, URI.create(property.dataUrl))
+        return if (ObjectUtils.isEmpty(property.dataJsonPath)) {
+            val response = restTemplate.exchange(requestEntity, List::class.java).body
+            response?.map {
+                SyncDocument("", "", JSON.toJSONString(it),
+                        LocalDateTime.now(), LocalDateTime.now())
+            }!!.toList()
+        } else {
+            val response = restTemplate.exchange(requestEntity, JSONObject::class.java).body
+            val jsonArray = JSONPath.eval(response, property.dataJsonPath) as JSONArray
+            jsonArray.map {
+                if (property.type == 1.toByte()) {
+                    SyncDocument(JSONPath.eval(it, property.snJsonPath).toString(), JSON.toJSONString(it),
+                            LocalDateTime.now(), LocalDateTime.now())
+                } else {
+                    SyncDocument(JSONPath.eval(it, property.snJsonPath).toString(),
+                            JSONPath.eval(it, property.rsnJsonPath).toString(), JSON.toJSONString(it),
+                            LocalDateTime.now(), LocalDateTime.now())
+                }
+            }.toList()
+        }
+    }
 
     override fun pullAndSave(schedule: SyncSchedule, parameter: Any?) {
         fun <T> execute(action: () -> T): Pair<Long, T> {

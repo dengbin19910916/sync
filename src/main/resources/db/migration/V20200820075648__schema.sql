@@ -22,30 +22,42 @@ drop table if exists sync_property;
 
 create table sync_property
 (
-    id            bigint auto_increment
-        primary key,
-    type          tinyint               not null,
-    shop_code     varchar(100)          not null,
-    shop_name     varchar(100)          not null,
-    origin_time   datetime              not null,
-    start_page    int                   null,
-    delay         int        default 60 null,
-    time_interval int        default 60 not null,
-    bean_name     varchar(100)          null,
-    bean_class    varchar(200)          null,
-    enabled       tinyint(1) default 1  not null,
-    fired         tinyint(1) default 1  not null,
-    compositional tinyint(1) default 0  not null
+    id                 bigint auto_increment primary key,
+    type               tinyint               not null,
+    shop_code          varchar(100)          not null,
+    shop_name          varchar(100)          not null,
+    origin_time        datetime              not null,
+    start_page         int                   null,
+    delay              int        default 60 null,
+    time_interval      int        default 60 not null,
+    host               varchar(100),
+    count_path         varchar(200),
+    data_path          varchar(200),
+    count_json_path    varchar(100),
+    data_json_path     varchar(100),
+    sn_json_path       varchar(100),
+    rsn_json_path      varchar(100),
+    created_json_path  varchar(100),
+    modified_json_path varchar(100),
+    bean_name          varchar(100)          null,
+    bean_class         varchar(200)          null,
+    enabled            tinyint(1) default 1  not null,
+    fired              tinyint(1) default 1  not null,
+    compositional      tinyint(1) default 0  not null
 );
 
 INSERT INTO sync_property (id, type, shop_code, shop_name, origin_time, start_page, delay, time_interval,
-                           bean_name, bean_class, enabled, fired, compositional)
-VALUES (1, 1, '8505,8529,8997', '京东自营旗舰店', '2020-08-01 00:00:00', 1, 60, 60, 'jdDpsOrderSynchronizer8505',
-        'io.xxx.sync.core.JdDpsOrderSynchronizer', 1, 1, 0);
+                           host, count_path, data_path, count_json_path, data_json_path, sn_json_path, rsn_json_path,
+                           created_json_path, modified_json_path, bean_name, bean_class, enabled, fired, compositional)
+VALUES (1, 1, '8505,8529,8997', '京东自营旗舰店', '2020-08-01 00:00:00', 1, 60, 60,
+        null, null, null, null, null, null, null, null, null,
+        'jdDpsOrderSynchronizer8505', 'io.xxx.sync.core.JdDpsOrderSynchronizer', 1, 1, 0);
 INSERT INTO sync_property (id, type, shop_code, shop_name, origin_time, start_page, delay, time_interval,
-                           bean_name, bean_class, enabled, fired, compositional)
-VALUES (2, 2, '8505,8529,8997', '京东自营旗舰店', '2020-08-01 00:00:00', 1, 60, 60, 'jdDpsRefundSynchronizer8505',
-        'io.xxx.sync.core.JdDpsRefundSynchronizer', 1, 1, 0);
+                           host, count_path, data_path, count_json_path, data_json_path, sn_json_path, rsn_json_path,
+                           created_json_path, modified_json_path, bean_name, bean_class, enabled, fired, compositional)
+VALUES (2, 2, '8505,8529,8997', '京东自营旗舰店', '2020-08-01 00:00:00', 1, 60, 60,
+        null, null, null, null, null, null, null, null, null,
+        'jdDpsRefundSynchronizer8505', 'io.xxx.sync.core.JdDpsRefundSynchronizer', 1, 1, 0);
 
 drop table if exists sync_schedule;
 
