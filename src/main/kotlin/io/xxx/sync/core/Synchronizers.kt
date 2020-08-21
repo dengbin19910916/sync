@@ -63,10 +63,11 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
             val maxEndTime = uncompletedSchedules.maxByOrNull { it.endTime }?.endTime
 
             if (minStartTime != null && maxEndTime != null) {
-                val schedule = SyncSchedule(1L, property.id, minStartTime, maxEndTime,
+                val defaultId = 1000000000000000000
+                val schedule = SyncSchedule(defaultId, property.id, minStartTime, maxEndTime,
                         0, false, 0, 0, 0, 0)
                 pullAndSave(schedule, parameter)
-                debug("0000000000000000000", schedule)
+                debug(defaultId, schedule)
                 updateSchedules(uncompletedSchedules)
             }
         }
