@@ -46,16 +46,6 @@ class JdDpsOrderSynchronizer(property: SyncProperty) : PageDocumentSynchronizer(
                 .body!!
         return jsonObject.toJavaObject(request.responseClass)
     }
-
-    companion object {
-        fun LocalDateTime.toDate(): Date {
-            return Date.from(this.atZone(ZoneId.systemDefault()).toInstant())
-        }
-
-        fun Date.toLocalDateTime(): LocalDateTime {
-            return LocalDateTime.ofInstant(this.toInstant(), ZoneId.systemDefault())
-        }
-    }
 }
 
 /**
@@ -94,13 +84,13 @@ class JdDpsRefundSynchronizer(property: SyncProperty) : PageDocumentSynchronizer
         private val jdClient = DefaultJdClient(
                 "http://api.jd.com/routerjson", "e1085458fffe44e988231584556bcbe4ztew",
                 "C435BE5E5410BBE2B8CC5D57B96F2A87", "87fdccacafd2407eb84d2f52d81e6959")
-
-        fun LocalDateTime.toDate(): Date {
-            return Date.from(this.atZone(ZoneId.systemDefault()).toInstant())!!
-        }
-
-        fun Date.toLocalDateTime(): LocalDateTime {
-            return LocalDateTime.ofInstant(this.toInstant(), ZoneId.systemDefault())
-        }
     }
+}
+
+fun LocalDateTime.toDate(): Date {
+    return Date.from(this.atZone(ZoneId.systemDefault()).toInstant())
+}
+
+fun Date.toLocalDateTime(): LocalDateTime {
+    return LocalDateTime.ofInstant(this.toInstant(), ZoneId.systemDefault())
 }
