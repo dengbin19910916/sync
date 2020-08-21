@@ -34,9 +34,10 @@ repositories {
 extra["springBootAdminVersion"] = "2.3.0"
 
 dependencies {
-    implementation("io.ebean:ebean:12.3.2")
-    implementation("io.ebean:ebean-querybean:12.2.3")
-    testImplementation("io.ebean:ebean-test:12.3.2")
+    implementation("io.ebean:ebean:12.3.8")
+    implementation("io.ebean:ebean-agent:12.3.8")
+    implementation("io.ebean:ebean-querybean:12.3.8")
+    testImplementation("io.ebean:ebean-test:12.3.8")
 
     implementation("org.codehaus.jackson:jackson-mapper-asl:1.9.13")
     implementation("com.jd:open-api-sdk:2.0")
