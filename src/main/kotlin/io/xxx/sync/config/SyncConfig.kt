@@ -104,7 +104,7 @@ class JobManager {
         }
 
         for (jobProperty in jobProperties) {
-            val sign: String = jobProperty.getSign()
+            val sign = jobProperty.getSign()
             if (ObjectUtils.isEmpty(jobProperty.sign)) {
                 updateJobProperty(jobProperty, sign)
                 scheduleJob(jobProperty)
