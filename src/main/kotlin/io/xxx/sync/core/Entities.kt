@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.annotation.TableId
 import com.baomidou.mybatisplus.annotation.TableName
 import com.baomidou.mybatisplus.core.toolkit.IdWorker
 import java.lang.RuntimeException
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 import java.time.LocalDateTime
 
 @TableName("job_property")
@@ -14,7 +17,34 @@ data class JobProperty(@TableId var name: String,
                        var address: String,
                        var beanName: String,
                        var cron: String,
-                       var sign: String?)
+                       var sign: String?) {
+
+    @Throws(NoSuchAlgorithmException::class)
+    fun sign(): String {
+        fun byte2Hex(bytes: ByteArray): String {
+            val hexDigits = charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F')
+            val j = bytes.size
+            val str = CharArray(j * 2)
+            var k = 0
+            for (byte0 in bytes) {
+                str[k++] = hexDigits[byte0.toInt() ushr (4) and (0xf)]
+                str[k++] = hexDigits[byte0.toInt() and (0xf)]
+            }
+            return String(str)
+        }
+
+        val str = this::class.java.declaredFields
+                .filter { it.name != "sign" }
+                .sortedBy { it.name }
+                .map { it.isAccessible = true;it.name + it.get(this) }
+                .joinToString { it }
+
+        val md5Instance = MessageDigest.getInstance("MD5")
+        md5Instance.update(str.toByteArray(StandardCharsets.UTF_8))
+        val digest = md5Instance.digest()
+        return byte2Hex(digest)
+    }
+}
 
 @TableName("sync_property")
 data class SyncProperty(var id: Long,
@@ -54,6 +84,16 @@ data class SyncProperty(var id: Long,
             }
             return host + countPath
         }
+
+    fun beanClass(): Class<*> {
+        return Class.forName(beanClass)
+    }
+
+    fun beanName(): String {
+        return if (beanName == null)
+            Class.forName(beanClass).simpleName.decapitalize() + shopCode
+        else beanName!!
+    }
 }
 
 @TableName("sync_schedule")
