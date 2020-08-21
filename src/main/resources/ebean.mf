@@ -1,0 +1,4 @@
+entity-packages: io.xxx.sync
+querybean-packages: io.xxx.sync
+transactional-packages: io.xxx.sync
+profile-location: true

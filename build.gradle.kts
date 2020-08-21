@@ -34,10 +34,10 @@ repositories {
 extra["springBootAdminVersion"] = "2.3.0"
 
 dependencies {
-    implementation("io.ebean:ebean:12.3.8")
-    implementation("io.ebean:ebean-agent:12.3.8")
-    implementation("io.ebean:ebean-querybean:12.3.8")
-    testImplementation("io.ebean:ebean-test:12.3.8")
+    implementation("io.ebean:ebean:12.3.7")
+    implementation("io.ebean:ebean-agent:12.3.7")
+    implementation("io.ebean:ebean-querybean:12.3.7")
+    testImplementation("io.ebean:ebean-test:12.3.7")
 
     implementation("org.codehaus.jackson:jackson-mapper-asl:1.9.13")
     implementation("com.jd:open-api-sdk:2.0")
@@ -79,4 +79,8 @@ tasks.withType<KotlinCompile> {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "11"
     }
+}
+
+ebean {
+    debugLevel = 1
 }
