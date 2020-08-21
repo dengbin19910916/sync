@@ -1,6 +1,5 @@
 package io.xxx.sync.config
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import io.xxx.sync.core.*
 import lombok.extern.slf4j.Slf4j
 import org.quartz.*
@@ -36,9 +35,7 @@ class SyncConfig : ApplicationRunner, ApplicationContextAware {
 
     @Synchronized
     override fun run(args: ApplicationArguments) {
-        val wrapper = QueryWrapper<SyncProperty>()
-        wrapper.eq("enabled", 1)
-        val properties = propertyMapper.selectList(wrapper)
+        val properties = propertyMapper.selectList(null)
         for (property in properties) {
             val clazz = property.getBeanClass()
             val beanName = property.getBeanName()

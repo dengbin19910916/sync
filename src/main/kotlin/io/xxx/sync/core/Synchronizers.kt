@@ -57,6 +57,11 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
             }
         }
 
+        fun updateSchedule(schedule: SyncSchedule) {
+            schedule.completed = true
+            scheduleMapper.updateById(schedule)
+        }
+
         fun composePullAndSave(parameter: Any? = null) {
             val uncompletedSchedules = getUncompletedSchedules()
             val minStartTime = uncompletedSchedules.minByOrNull { it.startTime }?.startTime
@@ -68,7 +73,7 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
                         0, false, 0, 0, 0, 0)
                 pullAndSave(schedule, parameter)
                 debug(defaultId, schedule)
-                updateSchedules(uncompletedSchedules)
+                uncompletedSchedules.forEach { updateSchedule(it) }
             }
         }
 
@@ -101,10 +106,10 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
         } else {
             this.property = property
         }
-        if (getParameters().isEmpty()) {
+        if (parameters.isEmpty()) {
             pullAndSave0()
         } else {
-            getParameters().forEach { parameter ->
+            parameters.forEach { parameter ->
                 pullAndSave0(parameter)
             }
         }
@@ -113,7 +118,7 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
     /**
      * 扩展参数由子类提供并共享给父类方法
      */
-    open fun getParameters(): List<Any> = emptyList()
+    open val parameters: List<Any> = emptyList()
 
     private fun getUncompletedSchedules(): List<SyncSchedule> {
         val wrapper = QueryWrapper<SyncSchedule>()
@@ -125,19 +130,10 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
         return scheduleMapper.selectList(wrapper)
     }
 
+    /**
+     * 拉取并保存数据
+     */
     abstract fun pullAndSave(schedule: SyncSchedule, parameter: Any?)
-
-    private fun updateSchedule(schedule: SyncSchedule) {
-        schedule.completed = true
-        scheduleMapper.updateById(schedule)
-    }
-
-    private fun updateSchedules(schedules: List<SyncSchedule>) {
-        schedules.forEach {
-            it.completed = true
-            scheduleMapper.updateById(it)
-        }
-    }
 
     companion object {
         private var log = LoggerFactory.getLogger(AbstractSynchronizer::class.java)
@@ -254,9 +250,7 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
         val shopCodes = property.shopCode.split(",")
         val targetShopCode = shopCodes[0]
         shopCodes.forEach { shopCode ->
-            val (getCountTime, count) = execute {
-                getCount(shopCode, schedule, parameter)
-            }
+            val (getCountTime, count) = execute { getCount(shopCode, schedule, parameter) }
             schedule.pullMillis += getCountTime
             var pages = if (count == null) 0 else (count / pageSize + if (count % pageSize == 0L) 0 else 1)
             while (pages-- > 0) {
