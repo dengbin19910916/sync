@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("idea")
-    id("io.ebean") version "12.3.2"
     id("org.springframework.boot") version "2.3.3.RELEASE"
     id("io.spring.dependency-management") version "1.0.10.RELEASE"
     kotlin("jvm") version "1.4.0"
@@ -34,11 +33,6 @@ repositories {
 extra["springBootAdminVersion"] = "2.3.0"
 
 dependencies {
-    implementation("io.ebean:ebean:12.3.7")
-    implementation("io.ebean:ebean-agent:12.3.7")
-    implementation("io.ebean:ebean-querybean:12.3.7")
-    testImplementation("io.ebean:ebean-test:12.3.7")
-
     implementation("org.codehaus.jackson:jackson-mapper-asl:1.9.13")
     implementation("com.jd:open-api-sdk:2.0")
     implementation("com.google.guava:guava:29.0-jre")
@@ -79,8 +73,4 @@ tasks.withType<KotlinCompile> {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "11"
     }
-}
-
-ebean {
-    debugLevel = 1
 }
