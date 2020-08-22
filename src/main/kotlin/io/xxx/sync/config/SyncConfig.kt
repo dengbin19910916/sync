@@ -26,8 +26,6 @@ class SyncConfig : ApplicationRunner, ApplicationContextAware {
 
     @Autowired
     private lateinit var propertyMapper: SyncPropertyMapper
-
-    @Autowired
     private lateinit var applicationContext: GenericApplicationContext
 
     @Synchronized
