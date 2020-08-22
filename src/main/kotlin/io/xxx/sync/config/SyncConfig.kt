@@ -28,27 +28,28 @@ class SyncConfig : ApplicationRunner, ApplicationContextAware {
     private lateinit var propertyMapper: SyncPropertyMapper
     private lateinit var applicationContext: GenericApplicationContext
 
-    @Synchronized
     override fun run(args: ApplicationArguments) {
-        val properties = propertyMapper.selectList(null)
-        for (property in properties) {
-            try {
-                val clazz = property.beanClass()
-                val beanName = property.beanName()
-                val builder = BeanDefinitionBuilder.genericBeanDefinition(clazz)
-                        .addConstructorArgValue(property)
-                if (!applicationContext.isBeanNameInUse(beanName)) {
-                    applicationContext.registerBeanDefinition(beanName, builder.beanDefinition)
-                }
-            } catch (e: Exception) {
-                if (log.isWarnEnabled) {
-                    log.warn("Create synchronizer bean[${property.id}] failed.", e)
+        synchronized(this) {
+            val properties = propertyMapper.selectList(null)
+            for (property in properties) {
+                try {
+                    val clazz = property.beanClass()
+                    val beanName = property.beanName()
+                    val builder = BeanDefinitionBuilder.genericBeanDefinition(clazz)
+                            .addConstructorArgValue(property)
+                    if (!applicationContext.isBeanNameInUse(beanName)) {
+                        applicationContext.registerBeanDefinition(beanName, builder.beanDefinition)
+                    }
+                } catch (e: Exception) {
+                    if (log.isWarnEnabled) {
+                        log.warn("Create synchronizer bean[${property.id}] failed.", e)
+                    }
                 }
             }
-        }
 
-        if (log.isInfoEnabled) {
-            log.info("Synchronizer init completed.")
+            if (log.isInfoEnabled) {
+                log.info("Synchronizer init completed.")
+            }
         }
     }
 
