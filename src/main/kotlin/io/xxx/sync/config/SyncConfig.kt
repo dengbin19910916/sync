@@ -1,6 +1,8 @@
 package io.xxx.sync.config
 
-import io.xxx.sync.core.*
+import io.xxx.sync.core.JobProperty
+import io.xxx.sync.core.JobPropertyMapper
+import io.xxx.sync.core.SyncPropertyMapper
 import lombok.extern.slf4j.Slf4j
 import org.quartz.*
 import org.quartz.impl.StdSchedulerFactory
@@ -100,7 +102,7 @@ class JobManager {
                 scheduleJob(jobProperty)
             } else {
                 if (jobProperty != cachedJobProperty) {
-                    val jobKey = JobKey(jobProperty.beanName + "Job")
+                    val jobKey = jobProperty.jobKey
                     if (scheduler.checkExists(jobKey)) {
                         scheduler.deleteJob(jobKey)
                     }
@@ -111,10 +113,11 @@ class JobManager {
         }
 
         val jobNames = jobProperties.map { it.name }.toSet()
-        JOB_PROPERTY_CACHE.forEach { (k, _) ->
-            if (!jobNames.contains(k)) {
-                scheduler.deleteJob(JobKey(k + "Job"))
-                JOB_PROPERTY_CACHE.remove(k + "Job")
+        JOB_PROPERTY_CACHE.forEach { (jobName, _) ->
+            if (!jobNames.contains(jobName)) {
+                val jobKey = jobName.getJobKey()
+                scheduler.deleteJob(jobKey)
+                JOB_PROPERTY_CACHE.remove(jobKey.name)
             }
         }
     }
@@ -143,7 +146,7 @@ class JobManager {
         jobDataMap["jobProperty"] = jobProperty
         jobDataMap["applicationContext"] = applicationContext
         return JobBuilder.newJob(ProxyJob::class.java)
-                .withIdentity(jobProperty.beanName + "Job")
+                .withIdentity(jobProperty.jobKey)
                 .withDescription(jobProperty.description)
                 .usingJobData(jobDataMap)
                 .storeDurably()
@@ -157,7 +160,7 @@ class JobManager {
             return null
         }
         return TriggerBuilder.newTrigger()
-                .withIdentity(jobProperty.beanName + "Trigger")
+                .withIdentity(jobProperty.triggerKey)
                 .withDescription(jobProperty.description)
                 .withSchedule(CronScheduleBuilder.cronSchedule(jobProperty.cron))
                 .build()
@@ -167,5 +170,9 @@ class JobManager {
         private val log: Logger = LoggerFactory.getLogger(JobManager::class.java)
         private val JOB_PROPERTY_CACHE = mutableMapOf<String, JobProperty>()
         private val scheduler: Scheduler = StdSchedulerFactory().scheduler
+
+        fun String.getJobKey(): JobKey {
+            return JobKey(this + "Job")
+        }
     }
 }

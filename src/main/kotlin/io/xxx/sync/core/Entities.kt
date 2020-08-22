@@ -4,10 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableField
 import com.baomidou.mybatisplus.annotation.TableId
 import com.baomidou.mybatisplus.annotation.TableName
 import com.baomidou.mybatisplus.core.toolkit.IdWorker
-import java.lang.RuntimeException
-import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
+import org.quartz.JobKey
+import org.quartz.TriggerKey
 import java.time.LocalDateTime
 
 @TableName("job_property")
@@ -16,7 +14,10 @@ data class JobProperty(@TableId var name: String,
                        var enabled: Boolean,
                        var address: String,
                        var beanName: String,
-                       var cron: String)
+                       var cron: String) {
+    val jobKey = JobKey(beanName + "Job")
+    val triggerKey = TriggerKey(beanName + "Trigger")
+}
 
 @TableName("sync_property")
 data class SyncProperty(var id: Long,
