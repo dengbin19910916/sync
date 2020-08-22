@@ -107,12 +107,14 @@ class JobManager {
                     scheduleJob(jobProperty)
                 }
             }
+            JOB_PROPERTY_MAP[jobProperty.name] = jobProperty
         }
 
         val jobNames = jobProperties.stream()
                 .map { it.name }
                 .collect(Collectors.toSet())
         JOB_PROPERTY_MAP.forEach { (k, _) ->
+            JOB_PROPERTY_MAP.remove(k + "Job")
             if (!jobNames.contains(k)) {
                 scheduler.deleteJob(JobKey(k + "Job"))
             }
