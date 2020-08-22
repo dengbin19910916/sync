@@ -34,12 +34,16 @@ class SyncConfig : ApplicationRunner, ApplicationContextAware {
     override fun run(args: ApplicationArguments) {
         val properties = propertyMapper.selectList(null)
         for (property in properties) {
-            val clazz = property.beanClass()
-            val beanName = property.beanName()
-            val builder = BeanDefinitionBuilder.genericBeanDefinition(clazz)
-                    .addConstructorArgValue(property)
-            if (!applicationContext.isBeanNameInUse(beanName)) {
-                applicationContext.registerBeanDefinition(beanName, builder.beanDefinition)
+            try {
+                val clazz = property.beanClass()
+                val beanName = property.beanName()
+                val builder = BeanDefinitionBuilder.genericBeanDefinition(clazz)
+                        .addConstructorArgValue(property)
+                if (!applicationContext.isBeanNameInUse(beanName)) {
+                    applicationContext.registerBeanDefinition(beanName, builder.beanDefinition)
+                }
+            } catch (e: Exception) {
+                log.warn("Create synchronizer bean[${property.id}] failed.", e)
             }
         }
 
