@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import org.springframework.util.ObjectUtils
 import java.net.InetAddress
 import java.util.stream.Collectors
 
@@ -97,15 +96,11 @@ class JobManager {
         }
 
         for (jobProperty in jobProperties) {
-            val sign = jobProperty.sign()
-            if (!JOB_PROPERTY_MAP.containsKey(jobProperty.name)) {
-                if (ObjectUtils.isEmpty(jobProperty.sign) || jobProperty.sign != sign) {
-                    updateJobProperty(jobProperty, sign)
-                }
+            val cachedJobProperty = JOB_PROPERTY_CACHE[jobProperty.name]
+            if (cachedJobProperty == null) {
                 scheduleJob(jobProperty)
             } else {
-                if (jobProperty.sign == null || jobProperty.sign != sign) {
-                    updateJobProperty(jobProperty, sign)
+                if (jobProperty != cachedJobProperty) {
                     val jobKey = JobKey(jobProperty.beanName + "Job")
                     if (scheduler.checkExists(jobKey)) {
                         scheduler.deleteJob(jobKey)
@@ -113,23 +108,16 @@ class JobManager {
                     scheduleJob(jobProperty)
                 }
             }
-            JOB_PROPERTY_MAP[jobProperty.name] = jobProperty
+            JOB_PROPERTY_CACHE[jobProperty.name] = jobProperty
         }
 
-        val jobNames = jobProperties.stream()
-                .map { it.name }
-                .collect(Collectors.toSet())
-        JOB_PROPERTY_MAP.forEach { (k, _) ->
-            JOB_PROPERTY_MAP.remove(k + "Job")
+        val jobNames = jobProperties.map { it.name }.toSet()
+        JOB_PROPERTY_CACHE.forEach { (k, _) ->
             if (!jobNames.contains(k)) {
                 scheduler.deleteJob(JobKey(k + "Job"))
+                JOB_PROPERTY_CACHE.remove(k + "Job")
             }
         }
-    }
-
-    private fun updateJobProperty(jobProperty: JobProperty, sign: String) {
-        jobProperty.sign = sign
-        jobPropertyMapper.updateById(jobProperty)
     }
 
     private fun scheduleJob(jobProperty: JobProperty) {
@@ -178,7 +166,7 @@ class JobManager {
 
     companion object {
         private val log: Logger = LoggerFactory.getLogger(JobManager::class.java)
-        private val JOB_PROPERTY_MAP = mutableMapOf<String, JobProperty>()
+        private val JOB_PROPERTY_CACHE = mutableMapOf<String, JobProperty>()
         private val scheduler: Scheduler = StdSchedulerFactory().scheduler
     }
 }

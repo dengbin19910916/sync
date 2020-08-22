@@ -7,8 +7,7 @@ create table job_property
     enabled     boolean      not null,
     address     varchar(32)  not null,
     bean_name   varchar(200) not null,
-    cron        varchar(20)  not null,
-    sign        varchar(50)
+    cron        varchar(20)  not null
 );
 
 insert into job_property(name, description, enabled, address, bean_name, cron)
