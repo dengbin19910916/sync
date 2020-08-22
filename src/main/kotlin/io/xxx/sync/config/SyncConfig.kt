@@ -138,7 +138,10 @@ class JobManager {
             val jobDetail = getJobDetail(jobProperty)
             if (jobProperty.enabled) {
                 if (!scheduler.checkExists(jobDetail.key)) {
-                    scheduler.scheduleJob(jobDetail, getTrigger(jobProperty))
+                    val trigger = getTrigger(jobProperty)
+                    if (trigger != null) {
+                        scheduler.scheduleJob(jobDetail, trigger)
+                    }
                 }
             } else {
                 if (scheduler.checkExists(jobDetail.key)) {
@@ -162,8 +165,9 @@ class JobManager {
 
     private fun getTrigger(jobProperty: JobProperty): Trigger? {
         if (!CronExpression.isValidExpression(jobProperty.cron)) {
-            log.error("Job[{},{}] cron expression [{}] is not valid.",
+            log.warn("Job[{},{}] cron expression [{}] is not valid.",
                     jobProperty.name, jobProperty.description, jobProperty.cron)
+            return null
         }
         return TriggerBuilder.newTrigger()
                 .withIdentity(jobProperty.beanName + "Trigger")
