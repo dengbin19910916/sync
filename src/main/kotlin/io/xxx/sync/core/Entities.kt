@@ -4,8 +4,9 @@ import com.baomidou.mybatisplus.annotation.TableField
 import com.baomidou.mybatisplus.annotation.TableId
 import com.baomidou.mybatisplus.annotation.TableName
 import com.baomidou.mybatisplus.core.toolkit.IdWorker
-import org.quartz.JobKey
-import org.quartz.TriggerKey
+import io.xxx.sync.config.ProxyJob
+import org.quartz.*
+import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
 @TableName("job_property")
@@ -16,7 +17,33 @@ data class JobProperty(@TableId var name: String,
                        var beanName: String,
                        var cron: String) {
     val jobKey = JobKey(beanName + "Job")
-    val triggerKey = TriggerKey(beanName + "Trigger")
+
+    val jobDetail: JobDetail
+    get() {
+        return JobBuilder.newJob(ProxyJob::class.java)
+                .withIdentity(jobKey)
+                .withDescription(description)
+                .storeDurably()
+                .build()
+    }
+
+    val trigger: Trigger?
+        get() {
+            if (!CronExpression.isValidExpression(cron)) {
+                log.warn("Job[{},{}] cron expression [{}] is not valid.",
+                        name, description, cron)
+                return null
+            }
+            return TriggerBuilder.newTrigger()
+                    .withIdentity(TriggerKey(beanName + "Trigger"))
+                    .withDescription(description)
+                    .withSchedule(CronScheduleBuilder.cronSchedule(cron))
+                    .build()
+        }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(JobProperty::class.java)
+    }
 }
 
 @TableName("sync_property")

@@ -125,10 +125,13 @@ class JobManager {
     private fun scheduleJob(jobProperty: JobProperty) {
         val address = InetAddress.getLocalHost().hostAddress
         if (address == jobProperty.address) {
-            val jobDetail = getJobDetail(jobProperty)
+            val jobDetail = jobProperty.jobDetail
+            val jobDataMap = jobDetail.jobDataMap
+            jobDataMap["jobProperty"] = jobProperty
+            jobDataMap["applicationContext"] = applicationContext
             if (jobProperty.enabled) {
                 if (!scheduler.checkExists(jobDetail.key)) {
-                    val trigger = getTrigger(jobProperty)
+                    val trigger = jobProperty.trigger
                     if (trigger != null) {
                         scheduler.scheduleJob(jobDetail, trigger)
                     }
@@ -141,33 +144,7 @@ class JobManager {
         }
     }
 
-    private fun getJobDetail(jobProperty: JobProperty): JobDetail {
-        val jobDataMap = JobDataMap()
-        jobDataMap["jobProperty"] = jobProperty
-        jobDataMap["applicationContext"] = applicationContext
-        return JobBuilder.newJob(ProxyJob::class.java)
-                .withIdentity(jobProperty.jobKey)
-                .withDescription(jobProperty.description)
-                .usingJobData(jobDataMap)
-                .storeDurably()
-                .build()
-    }
-
-    private fun getTrigger(jobProperty: JobProperty): Trigger? {
-        if (!CronExpression.isValidExpression(jobProperty.cron)) {
-            log.warn("Job[{},{}] cron expression [{}] is not valid.",
-                    jobProperty.name, jobProperty.description, jobProperty.cron)
-            return null
-        }
-        return TriggerBuilder.newTrigger()
-                .withIdentity(jobProperty.triggerKey)
-                .withDescription(jobProperty.description)
-                .withSchedule(CronScheduleBuilder.cronSchedule(jobProperty.cron))
-                .build()
-    }
-
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(JobManager::class.java)
         private val JOB_PROPERTY_CACHE = mutableMapOf<String, JobProperty>()
         private val scheduler: Scheduler = StdSchedulerFactory().scheduler
 
