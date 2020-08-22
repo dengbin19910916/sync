@@ -17,7 +17,6 @@ import org.springframework.context.support.GenericApplicationContext
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.net.InetAddress
-import java.util.stream.Collectors
 
 @Slf4j
 @Configuration
