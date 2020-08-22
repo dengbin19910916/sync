@@ -59,7 +59,6 @@ class SyncConfig : ApplicationRunner, ApplicationContextAware {
     }
 
     companion object {
-
         val log: Logger = LoggerFactory.getLogger(SyncConfig::class.java)
     }
 }
