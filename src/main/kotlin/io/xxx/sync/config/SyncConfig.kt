@@ -83,10 +83,6 @@ class JobManager {
     @Autowired
     private lateinit var applicationContext: ApplicationContext
 
-    init {
-        scheduler.start()
-    }
-
     @Scheduled(cron = "*/3 * * * * ?")
     fun loadJobs() {
         val jobProperties = jobPropertyMapper.selectList(null)
@@ -145,6 +141,10 @@ class JobManager {
     companion object {
         private val JOB_PROPERTY_CACHE = mutableMapOf<String, JobProperty>()
         private val scheduler: Scheduler = StdSchedulerFactory().scheduler
+
+        init {
+            scheduler.start()
+        }
 
         fun String.getJobKey(): JobKey {
             return JobKey(this + "Job")
