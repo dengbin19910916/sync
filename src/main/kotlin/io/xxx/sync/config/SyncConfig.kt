@@ -43,7 +43,9 @@ class SyncConfig : ApplicationRunner, ApplicationContextAware {
                     applicationContext.registerBeanDefinition(beanName, builder.beanDefinition)
                 }
             } catch (e: Exception) {
-                log.warn("Create synchronizer bean[${property.id}] failed.", e)
+                if (log.isWarnEnabled) {
+                    log.warn("Create synchronizer bean[${property.id}] failed.", e)
+                }
             }
         }
 
