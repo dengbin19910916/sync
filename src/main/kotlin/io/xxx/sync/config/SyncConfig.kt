@@ -97,7 +97,7 @@ class JobManager {
         }
 
         for (jobProperty in jobProperties) {
-            val cachedJobProperty = JOB_PROPERTY_CACHE[jobProperty.name]
+            val cachedJobProperty = JOB_PROPERTY_CACHE[jobProperty.beanName]
             if (cachedJobProperty == null) {
                 scheduleJob(jobProperty)
             } else {
@@ -109,10 +109,10 @@ class JobManager {
                     scheduleJob(jobProperty)
                 }
             }
-            JOB_PROPERTY_CACHE[jobProperty.name] = jobProperty
+            JOB_PROPERTY_CACHE[jobProperty.beanName] = jobProperty
         }
 
-        val jobNames = jobProperties.map { it.name }.toSet()
+        val jobNames = jobProperties.map { it.beanName }.toSet()
         JOB_PROPERTY_CACHE.forEach { (jobName, _) ->
             if (!jobNames.contains(jobName)) {
                 val jobKey = jobName.getJobKey()

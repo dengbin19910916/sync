@@ -10,28 +10,27 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 
 @TableName("job_property")
-data class JobProperty(@TableId var name: String,
+data class JobProperty(@TableId var beanName: String,
                        var description: String,
                        var enabled: Boolean,
                        var address: String,
-                       var beanName: String,
                        var cron: String) {
     val jobKey = JobKey(beanName + "Job")
 
     val jobDetail: JobDetail
-    get() {
-        return JobBuilder.newJob(ProxyJob::class.java)
-                .withIdentity(jobKey)
-                .withDescription(description)
-                .storeDurably()
-                .build()
-    }
+        get() {
+            return JobBuilder.newJob(ProxyJob::class.java)
+                    .withIdentity(jobKey)
+                    .withDescription(description)
+                    .storeDurably()
+                    .build()
+        }
 
     val trigger: Trigger?
         get() {
             if (!CronExpression.isValidExpression(cron)) {
                 log.warn("Job[{},{}] cron expression [{}] is not valid.",
-                        name, description, cron)
+                        beanName, description, cron)
                 return null
             }
             return TriggerBuilder.newTrigger()
