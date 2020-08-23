@@ -99,6 +99,9 @@ class JobManager {
                     val jobKey = jobProperty.jobKey
                     if (scheduler.checkExists(jobKey)) {
                         scheduler.deleteJob(jobKey)
+                        if (log.isInfoEnabled) {
+                            log.info("Job[{}, {}] is stopped.", jobProperty.beanName, jobProperty.description)
+                        }
                     }
                     scheduleJob(jobProperty)
                 }
