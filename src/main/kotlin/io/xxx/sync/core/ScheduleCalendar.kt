@@ -37,10 +37,15 @@ class ScheduleCalendar : Job {
         val duration = Duration.between(startTime, maxEndTime)
         val betweenSeconds = duration.seconds
         val count = (betweenSeconds / property.timeInterval)
+
+        val schedules = mutableListOf<SyncSchedule>()
         for (i in 0 until count) {
             val newStartTime = startTime.plusSeconds(property.timeInterval * i)
             val schedule = buildSchedule(property, newStartTime)
-            scheduleMapper.insert(schedule)
+            schedules.add(schedule)
+        }
+        if (schedules.isNotEmpty()) {
+            scheduleMapper.insertAll(schedules)
         }
     }
 
