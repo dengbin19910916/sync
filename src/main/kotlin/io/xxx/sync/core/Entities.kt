@@ -50,6 +50,15 @@ data class JobProperty(@TableId var beanName: String,
         }
     }
 
+    override fun hashCode(): Int {
+        var result = beanName.hashCode()
+        result = 31 * result + description.hashCode()
+        result = 31 * result + enabled.hashCode()
+        result = 31 * result + address.hashCode()
+        result = 31 * result + cron.hashCode()
+        return result
+    }
+
     companion object {
         private val log = LoggerFactory.getLogger(JobProperty::class.java)
     }
