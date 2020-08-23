@@ -38,6 +38,18 @@ data class JobProperty(@TableId var beanName: String,
                     .build()
         }
 
+    override fun equals(other: Any?): Boolean {
+        return if (other == null || other !is JobProperty) {
+            false
+        } else {
+            (beanName == other.beanName
+                    && description == other.description
+                    && enabled == other.enabled
+                    && address == other.address
+                    && cron == other.cron)
+        }
+    }
+
     companion object {
         private val log = LoggerFactory.getLogger(JobProperty::class.java)
     }
