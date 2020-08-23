@@ -202,7 +202,11 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
             restTemplate.exchange(requestEntity, Long::class.java).body
         } else {
             val response = restTemplate.exchange(requestEntity, JSONObject::class.java).body
-            JSONPath.eval(response, property.countJsonPath).toString().toLong()
+            if (response != null) {
+                JSONPath.eval(response, property.countJsonPath).toString().toLong()
+            } else {
+                0
+            }
         }
     }
 
@@ -227,11 +231,15 @@ abstract class PageDocumentSynchronizer(property: SyncProperty) : DocumentSynchr
         return if (ObjectUtils.isEmpty(property.dataJsonPath)) {
             val response = restTemplate.exchange(requestEntity,
                     object : ParameterizedTypeReference<List<JSONObject>>() {}).body
-            response!!.map { buildDocument(it) }
+            response?.map { buildDocument(it) } ?: emptyList()
         } else {
             val response = restTemplate.exchange(requestEntity, JSONObject::class.java).body
-            val jsonArray = JSONPath.eval(response, property.dataJsonPath) as JSONArray
-            jsonArray.map { buildDocument(it as JSONObject) }
+            if (response != null) {
+                val jsonArray = JSONPath.eval(response, property.dataJsonPath) as JSONArray
+                jsonArray.map { buildDocument(it as JSONObject) }
+            } else {
+                emptyList()
+            }
         }
     }
 
