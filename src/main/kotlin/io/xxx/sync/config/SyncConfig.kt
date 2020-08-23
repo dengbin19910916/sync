@@ -100,7 +100,7 @@ class JobManager {
                     if (scheduler.checkExists(jobKey)) {
                         scheduler.deleteJob(jobKey)
                         if (log.isInfoEnabled) {
-                            log.info("Job[{}, {}] is deleted.", jobProperty.beanName, jobProperty.description)
+                            log.info("Job[{}, {}] is deleted.", jobProperty.beanName, cachedJobProperty.description)
                         }
                     }
                     scheduleJob(jobProperty)
