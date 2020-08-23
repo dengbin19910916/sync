@@ -42,11 +42,11 @@ data class JobProperty(@TableId var beanName: String,
         return if (other == null || other !is JobProperty) {
             false
         } else {
-            (beanName == other.beanName
+            beanName == other.beanName
                     && description == other.description
                     && enabled == other.enabled
                     && address == other.address
-                    && cron == other.cron)
+                    && cron == other.cron
         }
     }
 
