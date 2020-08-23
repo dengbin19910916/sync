@@ -128,17 +128,24 @@ class JobManager {
                     val trigger = jobProperty.trigger
                     if (trigger != null) {
                         scheduler.scheduleJob(jobDetail, trigger)
+                        if (log.isInfoEnabled) {
+                            log.info("Job[{}, {}] is started.", jobProperty.beanName, jobProperty.description)
+                        }
                     }
                 }
             } else {
                 if (scheduler.checkExists(jobDetail.key)) {
                     scheduler.deleteJob(jobDetail.key)
+                    if (log.isInfoEnabled) {
+                        log.info("Job[{}, {}] is stopped.", jobProperty.beanName, jobProperty.description)
+                    }
                 }
             }
         }
     }
 
     companion object {
+        val log: Logger = LoggerFactory.getLogger(JobManager::class.java)
         private val JOB_PROPERTY_CACHE = mutableMapOf<String, JobProperty>()
         private val scheduler: Scheduler = StdSchedulerFactory().scheduler
 
