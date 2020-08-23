@@ -48,7 +48,6 @@ class ScheduleCalendar : Job {
 
     private fun buildSchedule(property: SyncProperty, startTime: LocalDateTime): SyncSchedule {
         val endTime = startTime.plusSeconds(property.timeInterval.toLong())
-        return SyncSchedule(IdWorker.getId(), property.id, startTime, endTime,
-                0, false, 0, 0, 0, 0)
+        return SyncSchedule(IdWorker.getId(), property.id, startTime, endTime)
     }
 }

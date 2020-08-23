@@ -127,6 +127,13 @@ data class SyncSchedule(var id: Long,
     val spendTime
         get() = if (totalMillis > 1000) (totalMillis / 1000).toString() + "s"
         else totalMillis.toString() + "ms"
+
+    constructor(id: Long,
+                propertyId: Long,
+                startTime: LocalDateTime,
+                endTime: LocalDateTime)
+            : this(id, propertyId, startTime, endTime, 0,
+            false, 0, 0, 0, 0)
 }
 
 /**
