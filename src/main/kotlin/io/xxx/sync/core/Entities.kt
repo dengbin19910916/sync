@@ -15,7 +15,7 @@ data class JobProperty(@TableId var beanName: String,
                        var address: String,
                        var cron: String) {
 
-    val jobKey: JobKey
+    val jobKey
         get() = JobKey(beanName + "Job")
 
     val jobDetail
