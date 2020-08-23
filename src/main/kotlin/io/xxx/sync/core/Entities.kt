@@ -1,6 +1,5 @@
 package io.xxx.sync.core
 
-import com.baomidou.mybatisplus.annotation.TableField
 import com.baomidou.mybatisplus.annotation.TableId
 import com.baomidou.mybatisplus.annotation.TableName
 import com.baomidou.mybatisplus.core.toolkit.IdWorker
@@ -15,26 +14,24 @@ data class JobProperty(@TableId var beanName: String,
                        var enabled: Boolean,
                        var address: String,
                        var cron: String) {
-    @TableField(exist = false)
-    val jobKey = JobKey(beanName + "Job")
 
-    val jobDetail: JobDetail
-        get() {
-            return JobBuilder.newJob(ProxyJob::class.java)
-                    .withIdentity(jobKey)
-                    .withDescription(description)
-                    .storeDurably()
-                    .build()
-        }
+    val jobKey: JobKey
+        get() = JobKey(beanName + "Job")
 
-    val trigger: Trigger?
-        get() {
-            if (!CronExpression.isValidExpression(cron)) {
-                log.warn("Job[{},{}] cron expression [{}] is not valid.",
-                        beanName, description, cron)
-                return null
-            }
-            return TriggerBuilder.newTrigger()
+    val jobDetail
+        get() = JobBuilder.newJob(ProxyJob::class.java)
+                .withIdentity(jobKey)
+                .withDescription(description)
+                .storeDurably()
+                .build()!!
+
+    val trigger
+        get() = if (!CronExpression.isValidExpression(cron)) {
+            log.warn("Job[{},{}] cron expression [{}] is not valid.",
+                    beanName, description, cron)
+            null
+        } else {
+            TriggerBuilder.newTrigger()
                     .withIdentity(TriggerKey(beanName + "Trigger"))
                     .withDescription(description)
                     .withSchedule(CronScheduleBuilder.cronSchedule(cron))
@@ -69,20 +66,18 @@ data class SyncProperty(var id: Long,
                         var enabled: Boolean,
                         var fired: Boolean,
                         var compositional: Boolean) {
-    val countUrl: String
-        get() {
-            if (host == null) {
-                throw RuntimeException("Host is empty.")
-            }
-            return host + countPath
+    val countUrl
+        get() = if (host == null) {
+            throw RuntimeException("Host is empty.")
+        } else {
+            host + countPath
         }
 
-    val dataUrl: String
-        get() {
-            if (host == null) {
-                throw RuntimeException("Host is empty.")
-            }
-            return host + countPath
+    val dataUrl
+        get() = if (host == null) {
+            throw RuntimeException("Host is empty.")
+        } else {
+            host + countPath
         }
 
     fun beanClass(): Class<*> {
@@ -108,8 +103,9 @@ data class SyncSchedule(var id: Long,
                         var saveMillis: Long = 0,
                         var totalMillis: Long = 0) {
 
-    @TableField(exist = false)
-    val spendTime: String = if (totalMillis > 1000) (totalMillis / 1000).toString() + "s" else totalMillis.toString() + "ms"
+    val spendTime
+        get() = if (totalMillis > 1000) (totalMillis / 1000).toString() + "s"
+        else totalMillis.toString() + "ms"
 }
 
 /**
