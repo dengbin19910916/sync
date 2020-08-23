@@ -65,7 +65,7 @@ create table sync_schedule
     property_id  bigint                not null,
     start_time   datetime              not null,
     end_time     datetime              not null,
-    priority     int     default 1     not null,
+    priority     int     default 0     not null,
     completed    boolean default false not null,
     count        bigint,
     pull_millis  bigint,
