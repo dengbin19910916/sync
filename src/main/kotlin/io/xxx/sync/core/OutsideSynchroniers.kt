@@ -54,7 +54,7 @@ class JdDpsOrderSynchronizer(property: SyncProperty) : PageDocumentSynchronizer(
 @Suppress("unused")
 class JdDpsRefundSynchronizer(property: SyncProperty) : PageDocumentSynchronizer(property) {
 
-    override val pageSize: Int get() = 50
+    override val pageSize = 50
 
     override fun getCount(shopCode: String, schedule: SyncSchedule, parameter: Any?): Long? {
         val response = getResponse(schedule, 1)
