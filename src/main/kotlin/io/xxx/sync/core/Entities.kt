@@ -15,6 +15,7 @@ data class JobProperty(@TableId var beanName: String,
                        var enabled: Boolean,
                        var address: String,
                        var cron: String) {
+    @TableField(exist = false)
     val jobKey = JobKey(beanName + "Job")
 
     val jobDetail: JobDetail
