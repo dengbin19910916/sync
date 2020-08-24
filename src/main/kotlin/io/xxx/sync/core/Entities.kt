@@ -14,13 +14,9 @@ data class JobProperty(@TableId var beanName: String,
                        var enabled: Boolean,
                        var address: String,
                        var cron: String) {
-
-    val jobKey
-        get() = JobKey(beanName + "Job")
-
     val jobDetail
         get() = JobBuilder.newJob(ProxyJob::class.java)
-                .withIdentity(jobKey)
+                .withIdentity(JobKey(beanName + "Job"))
                 .withDescription(description)
                 .storeDurably()
                 .build()!!
