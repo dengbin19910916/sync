@@ -83,7 +83,7 @@ class JobManager {
     @Autowired
     private lateinit var applicationContext: ApplicationContext
 
-    @Scheduled(cron = "*/3 * * * * ?")
+    @Scheduled(cron = "*/1 * * * * ?")
     fun loadJobs() {
         val jobProperties = jobPropertyMapper.selectList(null)
         if (jobProperties.isEmpty()) {
@@ -96,14 +96,7 @@ class JobManager {
                 scheduleJob(jobProperty)
             } else {
                 if (jobProperty != cachedJobProperty) {
-                    val jobKey = jobProperty.jobKey
-                    if (scheduler.checkExists(jobKey)) {
-                        scheduler.deleteJob(jobKey)
-                        if (log.isInfoEnabled) {
-                            log.info("Job[{}, {}] is deleted.", jobProperty.beanName, cachedJobProperty.description)
-                        }
-                    }
-                    scheduleJob(jobProperty)
+                    scheduleJob(jobProperty, true)
                 }
             }
             JOB_PROPERTY_CACHE[jobProperty.beanName] = jobProperty
@@ -119,28 +112,48 @@ class JobManager {
         }
     }
 
-    private fun scheduleJob(jobProperty: JobProperty) {
+    private fun scheduleJob(jobProperty: JobProperty, reload: Boolean = false) {
         val address = InetAddress.getLocalHost().hostAddress
         if (address == jobProperty.address) {
             val jobDetail = jobProperty.jobDetail
             val jobDataMap = jobDetail.jobDataMap
             jobDataMap["jobProperty"] = jobProperty
             jobDataMap["applicationContext"] = applicationContext
-            if (jobProperty.enabled) {
-                if (!scheduler.checkExists(jobDetail.key)) {
-                    val trigger = jobProperty.trigger
-                    if (trigger != null) {
-                        scheduler.scheduleJob(jobDetail, trigger)
-                        if (log.isInfoEnabled) {
-                            log.info("Job[{}, {}] is started.", jobProperty.beanName, jobProperty.description)
-                        }
+
+            if (reload) {
+                if (jobProperty.enabled) {
+                    if (scheduler.checkExists(jobDetail.key)) {
+                        scheduler.deleteJob(jobDetail.key)
+                    }
+                    scheduler.scheduleJob(jobDetail, jobProperty.trigger)
+                } else {
+                    if (scheduler.checkExists(jobDetail.key)) {
+                        scheduler.deleteJob(jobDetail.key)
+                    }
+                }
+                if (jobProperty.enabled) {
+                    if (log.isInfoEnabled) {
+                        log.info("Job[{}, {}] is {}.", jobProperty.beanName, jobProperty.description,
+                                if (jobProperty.enabled) "reloaded" else "stopped")
                     }
                 }
             } else {
-                if (scheduler.checkExists(jobDetail.key)) {
-                    scheduler.deleteJob(jobDetail.key)
-                    if (log.isInfoEnabled) {
-                        log.info("Job[{}, {}] is stopped.", jobProperty.beanName, jobProperty.description)
+                if (jobProperty.enabled) {
+                    if (!scheduler.checkExists(jobDetail.key)) {
+                        val trigger = jobProperty.trigger
+                        if (trigger != null) {
+                            scheduler.scheduleJob(jobDetail, trigger)
+                            if (log.isInfoEnabled) {
+                                log.info("Job[{}, {}] is started.", jobProperty.beanName, jobProperty.description)
+                            }
+                        }
+                    }
+                } else {
+                    if (scheduler.checkExists(jobDetail.key)) {
+                        scheduler.deleteJob(jobDetail.key)
+                        if (log.isInfoEnabled) {
+                            log.info("Job[{}, {}] is stopped.", jobProperty.beanName, jobProperty.description)
+                        }
                     }
                 }
             }

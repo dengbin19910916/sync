@@ -42,6 +42,9 @@ abstract class AbstractSynchronizer(protected var property: SyncProperty) : Job 
     }
 
     override fun execute(context: JobExecutionContext) {
+        if (log.isDebugEnabled) {
+            log.debug("Property[${property.id}] is ${if (property.fired) "fired" else "not fired"}")
+        }
         pullAndSave()
     }
 

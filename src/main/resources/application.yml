@@ -16,4 +16,7 @@ spring:
     password: 12345678
 logging:
   level:
-    io.xxx.sync.core.AbstractSynchronizer: debug
+    io.xxx.sync.core:
+      AbstractSynchronizer: debug
+      DocumentSynchronizer: debug
+      PageDocumentSynchronizer: debug
