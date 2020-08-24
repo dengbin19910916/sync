@@ -114,8 +114,8 @@ class JobManager {
 
     private fun scheduleJob(jobProperty: JobProperty, reload: Boolean = false) {
         val address = InetAddress.getLocalHost().hostAddress
+        val jobDetail = jobProperty.jobDetail
         if (address == jobProperty.address) {
-            val jobDetail = jobProperty.jobDetail
             val jobDataMap = jobDetail.jobDataMap
             jobDataMap["jobProperty"] = jobProperty
             jobDataMap["applicationContext"] = applicationContext
@@ -155,6 +155,13 @@ class JobManager {
                             log.info("Job[{}, {}] is stopped.", jobProperty.beanName, jobProperty.description)
                         }
                     }
+                }
+            }
+        } else {
+            if (scheduler.checkExists(jobDetail.key)) {
+                scheduler.deleteJob(jobDetail.key)
+                if (log.isInfoEnabled) {
+                    log.info("Job[{}, {}] is stopped.", jobProperty.beanName, jobProperty.description)
                 }
             }
         }
