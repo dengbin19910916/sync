@@ -121,38 +121,23 @@ class JobManager {
             jobDataMap["applicationContext"] = applicationContext
 
             if (reload) {
-                if (jobProperty.enabled) {
-                    if (scheduler.checkExists(jobDetail.key)) {
-                        scheduler.deleteJob(jobDetail.key)
-                    }
-                    scheduler.scheduleJob(jobDetail, jobProperty.trigger)
-                } else {
-                    if (scheduler.checkExists(jobDetail.key)) {
-                        scheduler.deleteJob(jobDetail.key)
-                    }
+                if (scheduler.checkExists(jobDetail.key)) {
+                    scheduler.deleteJob(jobDetail.key)
                 }
                 if (jobProperty.enabled) {
-                    if (log.isInfoEnabled) {
-                        log.info("Job[{}, {}] is {}.", jobProperty.beanName, jobProperty.description,
-                                if (jobProperty.enabled) "reloaded" else "stopped")
-                    }
+                    scheduler.scheduleJob(jobDetail, jobProperty.trigger)
+                }
+                if (log.isInfoEnabled) {
+                    log.info("Job[{}, {}] is {}.", jobProperty.beanName, jobProperty.description,
+                            if (jobProperty.enabled) "reloaded" else "stopped")
                 }
             } else {
-                if (jobProperty.enabled) {
-                    if (!scheduler.checkExists(jobDetail.key)) {
-                        val trigger = jobProperty.trigger
-                        if (trigger != null) {
-                            scheduler.scheduleJob(jobDetail, trigger)
-                            if (log.isInfoEnabled) {
-                                log.info("Job[{}, {}] is started.", jobProperty.beanName, jobProperty.description)
-                            }
-                        }
-                    }
-                } else {
-                    if (scheduler.checkExists(jobDetail.key)) {
-                        scheduler.deleteJob(jobDetail.key)
+                if (jobProperty.enabled && !scheduler.checkExists(jobDetail.key)) {
+                    val trigger = jobProperty.trigger
+                    if (trigger != null) {
+                        scheduler.scheduleJob(jobDetail, trigger)
                         if (log.isInfoEnabled) {
-                            log.info("Job[{}, {}] is stopped.", jobProperty.beanName, jobProperty.description)
+                            log.info("Job[{}, {}] is started.", jobProperty.beanName, jobProperty.description)
                         }
                     }
                 }
