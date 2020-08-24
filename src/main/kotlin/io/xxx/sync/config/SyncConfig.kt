@@ -20,7 +20,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.net.InetAddress
 
-@Slf4j
 @Configuration
 class SyncConfig : ApplicationRunner, ApplicationContextAware {
 
