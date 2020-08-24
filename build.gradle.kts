@@ -33,6 +33,7 @@ repositories {
 extra["springBootAdminVersion"] = "2.3.0"
 
 dependencies {
+    implementation("tk.mybatis:mapper-spring-boot-starter:2.1.5")
     implementation("org.codehaus.jackson:jackson-mapper-asl:1.9.13")
     implementation("com.jd:open-api-sdk:2.0")
     implementation("com.google.guava:guava:29.0-jre")

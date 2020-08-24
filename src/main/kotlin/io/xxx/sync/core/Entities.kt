@@ -7,9 +7,12 @@ import io.xxx.sync.config.ProxyJob
 import org.quartz.*
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
+import javax.persistence.Id
+import javax.persistence.Table
 
+@Table(name = "job_property")
 @TableName("job_property")
-data class JobProperty(@TableId var beanName: String,
+data class JobProperty(@Id @TableId var beanName: String,
                        var description: String,
                        var enabled: Boolean,
                        var address: String,
@@ -60,8 +63,9 @@ data class JobProperty(@TableId var beanName: String,
     }
 }
 
+@Table(name = "sync_property")
 @TableName("sync_property")
-data class SyncProperty(var id: Long,
+data class SyncProperty(@Id @TableId var id: Long,
                         var type: Byte,
                         var shopCode: String,
                         var shopName: String,
@@ -108,8 +112,9 @@ data class SyncProperty(var id: Long,
     }
 }
 
+@Table(name = "sync_schedule")
 @TableName("sync_schedule")
-data class SyncSchedule(var id: Long,
+data class SyncSchedule(@Id @TableId var id: Long,
                         var propertyId: Long,
                         var startTime: LocalDateTime,
                         var endTime: LocalDateTime,
@@ -135,8 +140,9 @@ data class SyncSchedule(var id: Long,
 /**
  * 数据包装类型
  */
+@Table(name = "sync_document")
 @TableName("sync_document")
-data class SyncDocument(var id: Long?,
+data class SyncDocument(@Id @TableId var id: Long?,
                         var propertyId: Long?,
                         var shopCode: String?,
                         var shopName: String?,
