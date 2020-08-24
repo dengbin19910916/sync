@@ -3,7 +3,6 @@ package io.xxx.sync.config
 import io.xxx.sync.core.JobProperty
 import io.xxx.sync.core.JobPropertyMapper
 import io.xxx.sync.core.SyncPropertyMapper
-import lombok.extern.slf4j.Slf4j
 import org.quartz.*
 import org.quartz.impl.StdSchedulerFactory
 import org.slf4j.Logger
